@@ -1,0 +1,93 @@
+@layer reset, base, tokens, recipes, utilities;
+
+@import './reset.css';
+
+@import './global.css';
+
+@import './tokens/index.css';
+
+@import './tokens/keyframes.css';
+
+@layer utilities {
+  .d_block {
+    display: block
+    }
+
+  .aspect_1\/1 {
+    aspect-ratio: 1/1
+    }
+
+  .border_1px_solid_border {
+    border: 1px solid border
+    }
+
+  .rounded_0\.5vw {
+    border-radius: 0.5vw
+    }
+
+  .text_letter {
+    color: var(--colors-letter)
+    }
+
+  .fs_8vw {
+    font-size: 8vw
+    }
+
+  .text_center {
+    text-align: center
+    }
+
+  .leading_12\.2vw {
+    line-height: 12.2vw
+    }
+
+  .shadow_1\.8px_2\.4px_1\.8px_rgba\(0\,_0\,_0\,_0\.05\) {
+    box-shadow: 1.8px 2.4px 1.8px rgba(0, 0, 0, 0.05)
+    }
+
+  .d_inline {
+    display: inline
+    }
+
+  .leading_normal {
+    line-height: var(--line-heights-normal)
+    }
+
+  .fs_2\.6vw {
+    font-size: 2.6vw
+    }
+
+  .font_400 {
+    font-weight: 400
+    }
+
+  .align_-25\% {
+    vertical-align: -25%
+    }
+
+  .w_13\.68\% {
+    width: 13.68%
+    }
+
+  .d_inline-block {
+    display: inline-block
+    }
+
+  @media screen and (min-width: 501px) {
+    .md\:fs_40px {
+      font-size: 40px
+    }
+
+    .md\:leading_65px {
+      line-height: 65px
+    }
+
+    .md\:rounded_4px {
+      border-radius: 4px
+    }
+
+    .md\:fs_14\.5px {
+      font-size: 14.5px
+    }
+        }
+}
