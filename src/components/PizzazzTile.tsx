@@ -1,4 +1,7 @@
+import { useContext, useEffect, useRef } from "react";
 import { css } from "../../styled-system/css";
+import { DragAndDropContext } from "../state/contextProvider";
+import { useActor } from "@xstate/react";
 
 type PizzazzTileProps = {
   letter: string;
@@ -38,7 +41,7 @@ const letterValues = {
 const letterStyles = css({
   border: `1px solid border`,
   borderRadius: "0.5vw",
-  color: "letter",
+  color: "#555",
   fontWeight: 400,
   fontSize: "8vw",
   textAlign: "center",
@@ -63,8 +66,19 @@ const letterContainerStyles = css({
 });
 
 export function PizzazzTile({ letter, isValid = false }: PizzazzTileProps) {
+  const tile = useRef<HTMLDivElement | null>(null);
+  const { dragAndDropService } = useContext(DragAndDropContext);
+  const [state, send] = useActor(dragAndDropService);
+  console.log(state);
+  useEffect(() => {
+    const tileElement = tile?.current;
+    if (tileElement) {
+      tileElement.addEventListener("dragstart", send);
+      tileElement.addEventListener("dragend", send);
+    }
+  });
   return (
-    <div className={letterContainerStyles}>
+    <div ref={tile} draggable className={letterContainerStyles}>
       <div
         className={letterStyles}
         style={{ backgroundColor: isValid ? "#C4F2CB" : "#F7E9B7" }}

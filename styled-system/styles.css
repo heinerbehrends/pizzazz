@@ -9,6 +9,94 @@
 @import './tokens/keyframes.css';
 
 @layer utilities {
+  .max-w_500px {
+    max-width: 500px
+    }
+
+  .my_auto {
+    margin-block: auto
+    }
+
+  .items_center {
+    align-items: center
+    }
+
+  .h_100dvh {
+    height: 100dvh
+    }
+
+  .h_100vh {
+    height: 100vh
+    }
+
+  .h_100vw {
+    height: 100vw
+    }
+
+  .h_100\% {
+    height: 100%
+    }
+
+  .gap_1px {
+    gap: 1px
+    }
+
+  .gap_3px {
+    gap: 3px
+    }
+
+  .gap_3rem {
+    gap: 3rem
+    }
+
+  .mx_auto {
+    margin-inline: auto
+    }
+
+  .list-style_none {
+    list-style: none
+    }
+
+  .gap_0px {
+    gap: 0px
+    }
+
+  .mt_33dvh {
+    margin-top: 33dvh
+    }
+
+  .p_1\.1vw {
+    padding: 1.1vw
+    }
+
+  .d_flex {
+    display: flex
+    }
+
+  .flex_row {
+    flex-direction: row
+    }
+
+  .justify_space-around {
+    justify-content: space-around
+    }
+
+  .box_border-box {
+    box-sizing: border-box
+    }
+
+  .mt_66dvh {
+    margin-top: 66dvh
+    }
+
+  .text_\#555 {
+    color: #555
+    }
+
+  .text_\#EA8433 {
+    color: #EA8433
+    }
+
   .d_block {
     display: block
     }
@@ -49,6 +137,14 @@
     display: inline
     }
 
+  .w_12\% {
+    width: 12%
+    }
+
+  .w_13\% {
+    width: 13%
+    }
+
   .leading_normal {
     line-height: var(--line-heights-normal)
     }
@@ -74,6 +170,10 @@
     }
 
   @media screen and (min-width: 501px) {
+    .md\:p_0\.25rem {
+      padding: 0.25rem
+    }
+
     .md\:fs_40px {
       font-size: 40px
     }

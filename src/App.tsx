@@ -1,27 +1,41 @@
+import { useActor } from "@xstate/react";
+import { useContext } from "react";
 import { css } from "../styled-system/css";
 import { PizzazzTile } from "./components/PizzazzTile";
+import {
+  DragAndDropContext,
+  GlobalStateProvider,
+} from "./state/contextProvider";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { dragAndDropService } from "./state/dragAndDropMachine";
 
-type PizzazzTileProps = { letters: string };
+const mainContainerStyles = css({
+  height: "100dvh",
+  maxWidth: "500px",
+  marginX: "auto",
+});
 
 const PizzazzBoardStyles = css({
-  marginX: "auto",
-  position: "relative",
   padding: "1.1vw",
-  boxShadow: "${shadow}",
-  listStyle: "none",
   display: "flex",
   flexDirection: "row",
   justifyContent: "space-around",
   boxSizing: "border-box",
+  marginTop: "66dvh",
   md: {
     padding: "0.25rem",
   },
 });
 
-function PizzazzBoard({ letters }: PizzazzTileProps) {
+dragAndDropService.onTransition(console.log).start();
+
+function PizzazzBoard() {
+  const { dragAndDropService } = useContext(DragAndDropContext);
+  const [state] = useActor(dragAndDropService);
+
   return (
     <div className={PizzazzBoardStyles}>
-      {letters.split("").map((letter) => (
+      {state?.context.letters.split("").map((letter) => (
         <PizzazzTile letter={letter} />
       ))}
     </div>
@@ -29,7 +43,13 @@ function PizzazzBoard({ letters }: PizzazzTileProps) {
 }
 
 function App() {
-  return <PizzazzBoard letters="pizzazz" />;
+  return (
+    <GlobalStateProvider>
+      <main className={mainContainerStyles}>
+        <PizzazzBoard />
+      </main>
+    </GlobalStateProvider>
+  );
 }
 
 export default App;
