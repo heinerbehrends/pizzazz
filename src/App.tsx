@@ -3,14 +3,21 @@ import { useContext } from "react";
 import { css } from "../styled-system/css";
 import { PizzazzTile } from "./components/PizzazzTile";
 import {
-  DragAndDropContext,
+  GlobalStateContext,
   GlobalStateProvider,
 } from "./state/contextProvider";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { dragAndDropService } from "./state/dragAndDropMachine";
+
+const letterIds = [
+  "zeroth",
+  "first",
+  "second",
+  "third",
+  "fourth",
+  "fifth",
+  "sixth",
+];
 
 const mainContainerStyles = css({
-  height: "100dvh",
   maxWidth: "500px",
   marginX: "auto",
 });
@@ -21,22 +28,25 @@ const PizzazzBoardStyles = css({
   flexDirection: "row",
   justifyContent: "space-around",
   boxSizing: "border-box",
-  marginTop: "66dvh",
+  marginTop: "40dvh",
   md: {
     padding: "0.25rem",
   },
 });
 
-dragAndDropService.onTransition(console.log).start();
-
 function PizzazzBoard() {
-  const { dragAndDropService } = useContext(DragAndDropContext);
+  const { dragAndDropService } = useContext(GlobalStateContext);
   const [state] = useActor(dragAndDropService);
-
+  dragAndDropService.onTransition((state) => console.log(state.value));
   return (
     <div className={PizzazzBoardStyles}>
-      {state?.context.letters.split("").map((letter) => (
-        <PizzazzTile letter={letter} />
+      {state.context.letters.split("").map((letter, index) => (
+        <PizzazzTile
+          key={letterIds[index]}
+          letter={letter}
+          index={index}
+          data-id={index}
+        />
       ))}
     </div>
   );

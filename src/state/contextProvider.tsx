@@ -3,7 +3,7 @@ import { useInterpret } from "@xstate/react";
 import { dragAndDropMachine } from "./dragAndDropMachine";
 import { InterpreterFrom } from "xstate";
 
-export const DragAndDropContext = createContext({
+export const GlobalStateContext = createContext({
   dragAndDropService: {} as InterpreterFrom<typeof dragAndDropMachine>,
 });
 
@@ -15,8 +15,8 @@ export function GlobalStateProvider({
   const dragAndDropService = useInterpret(dragAndDropMachine);
 
   return (
-    <DragAndDropContext.Provider value={{ dragAndDropService }}>
+    <GlobalStateContext.Provider value={{ dragAndDropService }}>
       {children}
-    </DragAndDropContext.Provider>
+    </GlobalStateContext.Provider>
   );
 }

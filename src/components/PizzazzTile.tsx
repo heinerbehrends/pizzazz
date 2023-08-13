@@ -1,10 +1,11 @@
 import { useContext, useEffect, useRef } from "react";
 import { css } from "../../styled-system/css";
-import { DragAndDropContext } from "../state/contextProvider";
+import { GlobalStateContext } from "../state/contextProvider";
 import { useActor } from "@xstate/react";
 
 type PizzazzTileProps = {
   letter: string;
+  index: number;
   isValid?: boolean;
 };
 
@@ -65,20 +66,48 @@ const letterContainerStyles = css({
   display: "inline-block",
 });
 
-export function PizzazzTile({ letter, isValid = false }: PizzazzTileProps) {
-  const tile = useRef<HTMLDivElement | null>(null);
-  const { dragAndDropService } = useContext(DragAndDropContext);
-  const [state, send] = useActor(dragAndDropService);
-  console.log(state);
+export function PizzazzTile({
+  letter,
+  isValid = false,
+  index,
+}: PizzazzTileProps) {
+  const { dragAndDropService } = useContext(GlobalStateContext);
+  const [, send] = useActor(dragAndDropService);
+  const tileRef = useRef<HTMLDivElement | null>(null);
+  // dragAndDropService.onChange(console.log);
+
   useEffect(() => {
-    const tileElement = tile?.current;
-    if (tileElement) {
-      tileElement.addEventListener("dragstart", send);
-      tileElement.addEventListener("dragend", send);
+    const tile = tileRef.current;
+    if (!tile) {
+      return;
     }
-  });
+    const siblings = [...(tile.parentNode?.children || [])] as HTMLDivElement[];
+    const dropTargetBounds = siblings.map((sibling) =>
+      sibling.getBoundingClientRect()
+    );
+    const dragIndex = Number(tile.dataset.index);
+    tile.addEventListener("dragstart", (mouseEvent) => {
+      send({
+        type: "dragstart",
+        dragIndex,
+        dragStartMousePosition: {
+          x: mouseEvent.clientX,
+          y: mouseEvent.clientY,
+        },
+        dropTargetBounds,
+      });
+    });
+
+    tile.addEventListener("dragend", send);
+  }, [tileRef.current, send]);
+
   return (
-    <div ref={tile} draggable className={letterContainerStyles}>
+    <div
+      ref={tileRef}
+      draggable
+      className={letterContainerStyles}
+      data-index={index}
+    >
       <div
         className={letterStyles}
         style={{ backgroundColor: isValid ? "#C4F2CB" : "#F7E9B7" }}
