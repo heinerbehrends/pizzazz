@@ -134,19 +134,16 @@ export const entryAnimationMachine = createMachine(
     actions: {
       updateLetters: assign((context: { letters: string; index: number }) => {
         const abc = "abcdefghijklmnopqrstuvwxyz";
-
         const getRandomIndex = (string: string) =>
           Math.floor(Math.random() * string.length);
         const getRandomLetter = (string: string) =>
           string[getRandomIndex(string)];
         const getRandomAbc = () => getRandomLetter(abc);
-
         const staticPart = "pizzazz".substring(0, context.index);
         const randomPart = Array(7 - context.index)
           .fill(null)
           .map(getRandomAbc)
           .join("");
-
         return {
           ...context,
           letters: staticPart + randomPart,
