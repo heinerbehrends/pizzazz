@@ -1,5 +1,5 @@
 import { useActor } from "@xstate/react";
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect } from "react";
 import { css } from "../styled-system/css";
 import { PizzazzTile } from "./components/PizzazzTile";
 import {
@@ -36,11 +36,11 @@ const PizzazzBoardStyles = css({
 });
 
 function PizzazzBoard() {
-  const { dragAndDropService } = useContext(GlobalStateContext);
+  const { dragAndDropService, entryAnimationService } =
+    useContext(GlobalStateContext);
   const [state, send] = useActor(dragAndDropService);
-  // dragAndDropService.onTransition((state) =>
-  //   console.log(state.context.distanceFromDragStart)
-  // );
+  const [animationState] = useActor(entryAnimationService);
+  // entryAnimationService.onTransition((state) => console.log(state.value));
 
   useEffect(() => {
     const body = document.body;
@@ -54,7 +54,8 @@ function PizzazzBoard() {
 
   return (
     <div className={PizzazzBoardStyles}>
-      {state.context.letters.split("").map((letter, index) => (
+      {/* change to state for working drag and drop */}
+      {animationState.context.letters.split("").map((letter, index) => (
         <PizzazzTile
           key={letterIds[index]}
           letter={letter}
