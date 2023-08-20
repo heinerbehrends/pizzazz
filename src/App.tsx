@@ -1,5 +1,5 @@
 import { useActor } from "@xstate/react";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { css } from "../styled-system/css";
 import { PizzazzTile } from "./components/PizzazzTile";
 import {
@@ -20,6 +20,7 @@ const letterIds = [
 const mainContainerStyles = css({
   maxWidth: "500px",
   marginX: "auto",
+  paddingTop: "40dvh",
 });
 
 const PizzazzBoardStyles = css({
@@ -28,7 +29,6 @@ const PizzazzBoardStyles = css({
   flexDirection: "row",
   justifyContent: "space-around",
   boxSizing: "border-box",
-  marginTop: "40dvh",
   md: {
     padding: "0.25rem",
   },
@@ -38,6 +38,16 @@ function PizzazzBoard() {
   const { dragAndDropService } = useContext(GlobalStateContext);
   const [state] = useActor(dragAndDropService);
   dragAndDropService.onTransition((state) => console.log(state.value));
+  useEffect(() => {
+    function onMouseMove(mouseEvent: MouseEvent) {
+      console.log(mouseEvent);
+    }
+    const body = document.body;
+    body.addEventListener("mousemove", onMouseMove);
+    return () => {
+      body.removeEventListener("mousemove", onMouseMove);
+    };
+  });
   return (
     <div className={PizzazzBoardStyles}>
       {state.context.letters.split("").map((letter, index) => (

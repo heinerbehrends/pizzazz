@@ -81,7 +81,7 @@ export function PizzazzTile({
     if (!tile) {
       return;
     }
-    tile.addEventListener("dragstart", (mouseEvent) => {
+    function onDragStart(mouseEvent: DragEvent) {
       send({
         type: "dragstart",
         dragStartMousePosition: {
@@ -89,9 +89,13 @@ export function PizzazzTile({
           y: mouseEvent.clientY,
         },
       });
-    });
-
+    }
+    tile.addEventListener("dragstart", onDragStart);
     tile.addEventListener("dragend", send);
+    return () => {
+      tile.removeEventListener("dragstart", onDragStart);
+      tile.removeEventListener("dragend", send);
+    };
   }, [tileRef.current, send]);
 
   return (

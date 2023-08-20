@@ -3,3 +3,8 @@ base,
 tokens,
 recipes,
 utilities;
+
+body {
+  width: 100dvw;
+  height: 100dvh;
+}
