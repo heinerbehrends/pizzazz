@@ -100,6 +100,7 @@ export function PizzazzTile({
         left: isDragTile ? x : undefined,
         top: isDragTile ? y : undefined,
         zIndex: isDragTile ? 1 : 0,
+        opacity: isDragTile ? 0.66 : 1,
       }}
       data-index={index}
     >
