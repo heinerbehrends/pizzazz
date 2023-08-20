@@ -24,6 +24,7 @@ const mainContainerStyles = css({
 });
 
 const PizzazzBoardStyles = css({
+  position: "relative",
   padding: "1.1vw",
   display: "flex",
   flexDirection: "row",
@@ -50,6 +51,7 @@ function PizzazzBoard() {
       body.removeEventListener("mousemove", send);
     };
   });
+
   return (
     <div className={PizzazzBoardStyles}>
       {state.context.letters.split("").map((letter, index) => (
