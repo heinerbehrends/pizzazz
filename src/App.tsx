@@ -1,5 +1,5 @@
 import { useActor } from "@xstate/react";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { css } from "../styled-system/css";
 import { PizzazzTile } from "./components/PizzazzTile";
 import {
@@ -36,16 +36,18 @@ const PizzazzBoardStyles = css({
 
 function PizzazzBoard() {
   const { dragAndDropService } = useContext(GlobalStateContext);
-  const [state] = useActor(dragAndDropService);
-  dragAndDropService.onTransition((state) => console.log(state.value));
+  const [state, send] = useActor(dragAndDropService);
+  // dragAndDropService.onTransition((state) =>
+  //   console.log(state.context.distanceFromDragStart)
+  // );
+
   useEffect(() => {
-    function onMouseMove(mouseEvent: MouseEvent) {
-      console.log(mouseEvent);
-    }
     const body = document.body;
-    body.addEventListener("mousemove", onMouseMove);
+    body.addEventListener("mouseup", send);
+    body.addEventListener("mousemove", send);
     return () => {
-      body.removeEventListener("mousemove", onMouseMove);
+      body.removeEventListener("mouseup", send);
+      body.removeEventListener("mousemove", send);
     };
   });
   return (

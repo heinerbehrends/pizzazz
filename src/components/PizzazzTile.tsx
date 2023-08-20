@@ -41,6 +41,7 @@ const letterValues = {
 
 const letterStyles = css({
   border: `1px solid border`,
+  pointerEvents: "none",
   borderRadius: "0.5vw",
   color: "#555",
   fontWeight: 400,
@@ -52,6 +53,7 @@ const letterStyles = css({
 });
 
 const subStyles = css({
+  pointerEvents: "none",
   lineHeight: "normal",
   fontSize: "2.6vw",
   fontWeight: 400,
@@ -62,8 +64,10 @@ const subStyles = css({
 });
 
 const letterContainerStyles = css({
+  position: "relative",
   width: "13.68%",
   display: "inline-block",
+  userSelect: "none",
 });
 
 export function PizzazzTile({
@@ -72,42 +76,38 @@ export function PizzazzTile({
   index,
 }: PizzazzTileProps) {
   const { dragAndDropService } = useContext(GlobalStateContext);
-  const [, send] = useActor(dragAndDropService);
+  const [state, send] = useActor(dragAndDropService);
   const tileRef = useRef<HTMLDivElement | null>(null);
-  // dragAndDropService.onChange(console.log);
 
   useEffect(() => {
     const tile = tileRef.current;
     if (!tile) {
       return;
     }
-    function onDragStart(mouseEvent: DragEvent) {
-      send({
-        type: "dragstart",
-        dragStartMousePosition: {
-          x: mouseEvent.clientX,
-          y: mouseEvent.clientY,
-        },
-      });
-    }
-    tile.addEventListener("dragstart", onDragStart);
-    tile.addEventListener("dragend", send);
+
+    tile.addEventListener("mousedown", send);
     return () => {
-      tile.removeEventListener("dragstart", onDragStart);
-      tile.removeEventListener("dragend", send);
+      tile.removeEventListener("mousedown", send);
     };
   }, [tileRef.current, send]);
-
+  const { x, y } = state.context.distanceFromDragStart;
+  const isDragTile = index === state.context.dragTileIndex;
   return (
     <div
       ref={tileRef}
-      draggable
       className={letterContainerStyles}
+      style={{
+        left: isDragTile ? x : undefined,
+        top: isDragTile ? y : undefined,
+        zIndex: isDragTile ? 1 : 0,
+      }}
       data-index={index}
     >
       <div
         className={letterStyles}
-        style={{ backgroundColor: isValid ? "#C4F2CB" : "#F7E9B7" }}
+        style={{
+          backgroundColor: isValid ? "#C4F2CB" : "#F7E9B7",
+        }}
       >
         {letter.toUpperCase()}
         <sub className={subStyles}>

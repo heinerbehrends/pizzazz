@@ -18,14 +18,17 @@ function isOverlapping(tileCenter: Coordinates) {
   };
 }
 
-function getDragDistance(context: DragAndDropContext, event: DragEvent) {
+export function getDragDistance(
+  context: DragAndDropContext,
+  event: MouseEvent
+) {
   return {
     x: event.clientX - context.dragStartMousePosition.x,
     y: event.clientY - context.dragStartMousePosition.y,
   };
 }
 
-function getElementCenter(event: DragEvent) {
+function getElementCenter(event: MouseEvent) {
   const tile = event.target as HTMLDivElement;
   const dragElementBounds = tile.getBoundingClientRect();
   const { left, top, right, bottom } = dragElementBounds;
@@ -37,30 +40,34 @@ function getElementCenter(event: DragEvent) {
 
 export function getDragTileCenter(
   context: DragAndDropContext,
-  event: DragEvent
+  event: MouseEvent
 ) {
-  const { x: dragX, y: dragY } = getDragDistance(context, event);
+  // const { x: dragX, y: dragY } = getDragDistance(context, event);
   const elementCenter = getElementCenter(event);
   return {
-    x: elementCenter.x + dragX,
-    y: elementCenter.y + dragY,
+    x: elementCenter.x,
+    y: elementCenter.y,
   };
 }
 
 export function getDropTileIndex(
   context: DragAndDropContext,
-  event: DragEvent
+  event: MouseEvent
 ) {
   const tile = event.target as HTMLDivElement;
   const siblings = [...(tile.parentNode?.children || [])] as HTMLDivElement[];
   const dropTargetBounds = siblings.map((sibling) =>
     sibling.getBoundingClientRect()
   );
-
   const dragTileCenter = getDragTileCenter(context, event);
-
   const dropIndex = dropTargetBounds
-    .map(isOverlapping(dragTileCenter))
+    .map((dropBounds, index) => {
+      // to prevent the tile from dropping on itself
+      if (index === context.dragTileIndex) {
+        return false;
+      }
+      return isOverlapping(dragTileCenter)(dropBounds);
+    })
     .indexOf(true);
 
   if (dropIndex === -1) {
