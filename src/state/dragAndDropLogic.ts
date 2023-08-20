@@ -25,8 +25,9 @@ function getDragDistance(context: DragAndDropContext, event: DragEvent) {
   };
 }
 
-function getElementCenter(context: DragAndDropContext) {
-  const dragElementBounds = context.dropTargetBounds[context.dragIndex];
+function getElementCenter(event: DragEvent) {
+  const tile = event.target as HTMLDivElement;
+  const dragElementBounds = tile.getBoundingClientRect();
   const { left, top, right, bottom } = dragElementBounds;
   return {
     x: right - (right - left) / 2,
@@ -39,30 +40,33 @@ export function getDragTileCenter(
   event: DragEvent
 ) {
   const { x: dragX, y: dragY } = getDragDistance(context, event);
-  const elementCenter = getElementCenter(context);
-  if (elementCenter) {
-    return {
-      x: elementCenter.x + dragX,
-      y: elementCenter.y + dragY,
-    };
-  }
+  const elementCenter = getElementCenter(event);
+  return {
+    x: elementCenter.x + dragX,
+    y: elementCenter.y + dragY,
+  };
 }
 
 export function getDropTileIndex(
   context: DragAndDropContext,
   event: DragEvent
 ) {
-  const dragTileCenter = getDragTileCenter(context, event);
-  if (typeof dragTileCenter === "undefined") {
-    return undefined;
-  }
-  console.log(
-    "dropTargets",
-    context.dropTargetBounds.map(isOverlapping(dragTileCenter))
+  const tile = event.target as HTMLDivElement;
+  const siblings = [...(tile.parentNode?.children || [])] as HTMLDivElement[];
+  const dropTargetBounds = siblings.map((sibling) =>
+    sibling.getBoundingClientRect()
   );
-  return context.dropTargetBounds
+
+  const dragTileCenter = getDragTileCenter(context, event);
+
+  const dropIndex = dropTargetBounds
     .map(isOverlapping(dragTileCenter))
     .indexOf(true);
+
+  if (dropIndex === -1) {
+    return null;
+  }
+  return dropIndex;
 }
 
 function replaceLetter(word: string, letter: string, index: number) {

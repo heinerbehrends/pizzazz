@@ -7,18 +7,14 @@ export type DragAndDropContext = {
     x: number;
     y: number;
   };
-  dragIndex: number;
-  dropTargetBounds: DOMRect[];
 };
 
 type DragStartEvent = {
   type: "dragstart";
-  dragIndex: number;
   dragStartMousePosition: {
     x: number;
     y: number;
   };
-  dropTargetBounds: DOMRect[];
 };
 type UpdateLettersEvent = {
   type: "updateLetters";
@@ -34,8 +30,6 @@ export const dragAndDropMachine = createMachine(
         x: 0,
         y: 0,
       },
-      dragIndex: -1,
-      dropTargetBounds: [],
     },
     states: {
       idle: {
@@ -59,8 +53,6 @@ export const dragAndDropMachine = createMachine(
       context: {
         letters: "pizzazz",
         dragStartMousePosition: {} as { x: number; y: number },
-        dragIndex: -1,
-        dropTargetBounds: [] as DOMRect[],
       },
       events: {} as
         | UpdateLettersEvent
@@ -84,17 +76,17 @@ export const dragAndDropMachine = createMachine(
             x,
             y,
           },
-          dragIndex: mouseEvent.dragIndex,
-          dropTargetBounds: mouseEvent.dropTargetBounds,
         };
       }),
       updateLetters: assign((context: DragAndDropContext, event: DragEvent) => {
-        console.log("Hooray from updateLetters");
+        const tile = event.target as HTMLDivElement;
         const dropIndex = getDropTileIndex(context, event);
-        if (dropIndex && context.dragIndex) {
+        const dragIndex = Number(tile.dataset.index);
+
+        if (dropIndex !== null) {
           return {
             ...context,
-            letters: swapLetters(context.letters, context.dragIndex, dropIndex),
+            letters: swapLetters(context.letters, dragIndex, dropIndex),
           };
         }
         return context;

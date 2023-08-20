@@ -81,20 +81,13 @@ export function PizzazzTile({
     if (!tile) {
       return;
     }
-    const siblings = [...(tile.parentNode?.children || [])] as HTMLDivElement[];
-    const dropTargetBounds = siblings.map((sibling) =>
-      sibling.getBoundingClientRect()
-    );
-    const dragIndex = Number(tile.dataset.index);
     tile.addEventListener("dragstart", (mouseEvent) => {
       send({
         type: "dragstart",
-        dragIndex,
         dragStartMousePosition: {
           x: mouseEvent.clientX,
           y: mouseEvent.clientY,
         },
-        dropTargetBounds,
       });
     });
 
