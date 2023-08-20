@@ -103,7 +103,6 @@ export const dragAndDropMachine = createMachine(
           const tile = event.target as HTMLDivElement;
           const dropIndex = getDropTileIndex(context, event);
           const dragIndex = Number(tile.dataset.index);
-          console.log("dropIndex", dropIndex);
           if (dropIndex === null || dropIndex === undefined) {
             return context;
           }
