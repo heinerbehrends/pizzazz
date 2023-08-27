@@ -1,4 +1,5 @@
 import { assign, createMachine } from "xstate";
+import { sendParent } from "xstate/lib/actions";
 
 export const entryAnimationMachine = createMachine(
   {
@@ -17,81 +18,81 @@ export const entryAnimationMachine = createMachine(
         onDone: { target: "ended" },
         states: {
           7: {
+            on: {
+              updateLetters: {
+                actions: ["sendAnimate"],
+              },
+            },
             after: {
               400: "6",
             },
             entry: "updateIndex",
-            on: {
-              updateLetters: {
-                actions: ["updateLetters"],
-              },
-            },
           },
           6: {
+            on: {
+              updateLetters: {
+                actions: ["sendAnimate"],
+              },
+            },
             after: {
               400: "5",
             },
             entry: "updateIndex",
-            on: {
-              updateLetters: {
-                actions: ["updateLetters"],
-              },
-            },
           },
           5: {
+            on: {
+              updateLetters: {
+                actions: ["sendAnimate"],
+              },
+            },
             after: {
               400: "4",
             },
             entry: "updateIndex",
-            on: {
-              updateLetters: {
-                actions: ["updateLetters"],
-              },
-            },
           },
           4: {
+            on: {
+              updateLetters: {
+                actions: ["sendAnimate"],
+              },
+            },
             after: {
               400: "3",
             },
             entry: "updateIndex",
-            on: {
-              updateLetters: {
-                actions: [{ type: "updateLetters" }],
-              },
-            },
           },
           3: {
+            on: {
+              updateLetters: {
+                actions: ["sendAnimate"],
+              },
+            },
             after: {
               400: "2",
             },
             entry: "updateIndex",
-            on: {
-              updateLetters: {
-                actions: ["updateLetters"],
-              },
-            },
           },
           2: {
+            on: {
+              updateLetters: {
+                actions: ["sendAnimate"],
+              },
+            },
             after: {
               400: "1",
             },
             entry: "updateIndex",
-            on: {
-              updateLetters: {
-                actions: ["updateLetters"],
-              },
-            },
           },
           1: {
+            on: {
+              updateLetters: {
+                actions: ["sendAnimate"],
+              },
+            },
             after: {
               400: "0",
             },
             entry: "updateIndex",
-            on: {
-              updateLetters: {
-                actions: ["updateLetters"],
-              },
-            },
           },
           0: {
             type: "final",
@@ -103,14 +104,15 @@ export const entryAnimationMachine = createMachine(
       },
     },
     context: {
-      letters: "ipzzazz",
       index: 0,
     },
     schema: {
-      actions: {
-        type: "updateLetters",
-        updateLetters: () => {},
-      },
+      actions: {} as
+        | {
+            type: "animate";
+            index: number;
+          }
+        | { type: "updateLetters" },
       services: {
         sendStopNextLetter: {} as {
           src: () => (callback: ({}) => {}) => void;
@@ -122,44 +124,37 @@ export const entryAnimationMachine = createMachine(
         },
       },
       context: {
-        letters: "pizzazz" as string,
         index: 0 as number,
       },
-      events: {} as { type: "updateLetters" } | { type: "stopNextLetter" },
+      events: {} as
+        | { type: "updateLetters" }
+        | { type: "sendAnimate"; index: number }
+        | { type: "stopNextLetter" },
     },
     tsTypes: {} as import("./entryAnimationMachine.typegen").Typegen0,
     predictableActionArguments: true,
   },
   {
     actions: {
-      updateLetters: assign((context: { letters: string; index: number }) => {
-        const abc = "abcdefghijklmnopqrstuvwxyz";
-        const getRandomIndex = (string: string) =>
-          Math.floor(Math.random() * string.length);
-        const getRandomLetter = (string: string) =>
-          string[getRandomIndex(string)];
-        const getRandomAbc = () => getRandomLetter(abc);
-        const staticPart = "pizzazz".substring(0, context.index);
-        const randomPart = Array(7 - context.index)
-          .fill(null)
-          .map(getRandomAbc)
-          .join("");
+      updateIndex: assign((context) => {
         return {
           ...context,
-          letters: staticPart + randomPart,
+          index: context.index + 1,
         };
       }),
-      updateIndex: assign((context) => ({
-        ...context,
-        index: context.index + 1,
-      })),
+      sendAnimate: sendParent((context) => {
+        return {
+          type: "animate",
+          index: context.index,
+        };
+      }),
     },
     services: {
-      sendUpdateLetters: () => (send) => {
-        const intervalId = setInterval(() => {
-          console.log("send updateLetters");
-          send("updateLetters");
-        }, 20);
+      sendUpdateLetters: () => (callback) => {
+        const intervalId = setInterval(
+          () => callback({ type: "updateLetters" }),
+          20
+        );
         return () => clearInterval(intervalId);
       },
     },

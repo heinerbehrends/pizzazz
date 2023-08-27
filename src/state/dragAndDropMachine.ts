@@ -1,9 +1,6 @@
 import { assign, createMachine } from "xstate";
-import {
-  getDragDistance,
-  getDropTileIndex,
-  swapLetters,
-} from "./dragAndDropLogic";
+import { getDragDistance, getDropTileIndex } from "./dragAndDropLogic";
+import { sendParent } from "xstate/lib/actions";
 
 export type DragAndDropContext = {
   letters: string;
@@ -18,14 +15,10 @@ export type DragAndDropContext = {
   dragTileIndex: number | undefined;
 };
 
-type UpdateLettersEvent = {
-  type: "updateLetters";
-};
-
 export const dragAndDropMachine = createMachine(
   {
     /** @xstate-layout N4IgpgJg5mDOIC5QQE4EMoEEB2EAiKA9gA4B0AlhADZgDEqGsALmikwNoAMAuoqMYVjkm5Qtj4gAHogCMANgAcpAMyrlAFgDsc7Z00AmfeoA0IAJ6zNm0vLlyAnOpmcH9mVYC+H0wyy4CJKS+UOTYULQAtoQArrBgUQBuYFy8SCACQiJiEtIITgCspIr5nHqcMurKMgqmFgjOpJzKLorq+Zrq+nLu6l4+6H74RGTBoeG+YLgpEhnCouJpuTL5+kXKcu0yhgqV9vY15rKcjc12O+2d3R1e3iDYhBBwEr44QyQzgnPZi4gAtHK1P5WUjqBzKfQKVR2AwKex9EAvfzDCjUMAfTLzHKITqA+r2Va2TQuTiVPQ7BTwxFvEYDEJhdFfBagXKqaz4rrKBT6DSOLm4-ScVaaEqcEr4zj2ZQdXo3IA */
-    id: "dragAndDrop",
+    id: "dragAndDropMachine",
     initial: "idle",
     context: {
       letters: "pizzazz",
@@ -52,7 +45,6 @@ export const dragAndDropMachine = createMachine(
       dragging: {
         on: {
           mousemove: {
-            target: "dragging",
             actions: ["setDistanceFromDragStart"],
           },
           mouseup: {
@@ -98,23 +90,17 @@ export const dragAndDropMachine = createMachine(
         dragTileIndex: undefined,
       })),
 
-      updateLetters: assign(
-        (context: DragAndDropContext, event: MouseEvent) => {
-          const tile = event.target as HTMLDivElement;
-          const dropIndex = getDropTileIndex(context, event);
-          const dragIndex = Number(tile.dataset.index);
-          if (dropIndex === null || dropIndex === undefined) {
-            return context;
-          }
-          return {
-            ...context,
-            letters: swapLetters(context.letters, dragIndex, dropIndex),
-          };
-        }
-      ),
+      updateLetters: sendParent((context, event: MouseEvent) => {
+        return {
+          type: "letterDropped" as const,
+          dragIndex: Number((event?.target as HTMLDivElement).dataset.index),
+          dropIndex: getDropTileIndex(context, event),
+        };
+      }),
       setDistanceFromDragStart: assign(
         (context: DragAndDropContext, event: MouseEvent) => {
           const distanceFromDragStart = getDragDistance(context, event);
+
           return {
             ...context,
             distanceFromDragStart,

@@ -36,26 +36,29 @@ const PizzazzBoardStyles = css({
 });
 
 function PizzazzBoard() {
-  const { dragAndDropService, entryAnimationService } =
-    useContext(GlobalStateContext);
-  const [state, send] = useActor(dragAndDropService);
-  const [animationState] = useActor(entryAnimationService);
-  // entryAnimationService.onTransition((state) => console.log(state.value));
+  const { gameService } = useContext(GlobalStateContext);
+  const [gameState, send] = useActor(gameService);
+  const [stateDnD, sendDnD] = useActor(gameState.children.dragAndDropMachine);
+
+  // const [, sendDnD] = useActor(dragAndDropService);
+  // gameService.onTransition((state) => console.log("game state", state.value));
+  // dragAndDropService.onTransition((state) =>
+  //   console.log("drag and drop context", state.context)
+  // );
 
   useEffect(() => {
     const body = document.body;
-    body.addEventListener("mouseup", send);
-    body.addEventListener("mousemove", send);
+    body.addEventListener("mouseup", sendDnD);
+    body.addEventListener("mousemove", sendDnD);
     return () => {
-      body.removeEventListener("mouseup", send);
-      body.removeEventListener("mousemove", send);
+      body.removeEventListener("mouseup", sendDnD);
+      body.removeEventListener("mousemove", sendDnD);
     };
   });
 
   return (
     <div className={PizzazzBoardStyles}>
-      {/* change to state for working drag and drop */}
-      {animationState.context.letters.split("").map((letter, index) => (
+      {gameState.context.letters.split("").map((letter, index) => (
         <PizzazzTile
           key={letterIds[index]}
           letter={letter}

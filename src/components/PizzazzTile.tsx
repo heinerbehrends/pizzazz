@@ -75,8 +75,9 @@ export function PizzazzTile({
   isValid = false,
   index,
 }: PizzazzTileProps) {
-  const { dragAndDropService } = useContext(GlobalStateContext);
-  const [state, send] = useActor(dragAndDropService);
+  const { gameService } = useContext(GlobalStateContext);
+  const [state] = useActor(gameService);
+  const [stateDnD, sendDnD] = useActor(state.children.dragAndDropMachine);
   const tileRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -85,13 +86,13 @@ export function PizzazzTile({
       return;
     }
 
-    tile.addEventListener("mousedown", send);
+    tile.addEventListener("mousedown", sendDnD);
     return () => {
-      tile.removeEventListener("mousedown", send);
+      tile.removeEventListener("mousedown", sendDnD);
     };
-  }, [tileRef.current, send]);
-  const { x, y } = state.context.distanceFromDragStart;
-  const isDragTile = index === state.context.dragTileIndex;
+  }, [tileRef.current, sendDnD]);
+  const { x, y } = stateDnD.context.distanceFromDragStart;
+  const isDragTile = index === stateDnD.context.dragTileIndex;
   return (
     <div
       ref={tileRef}
