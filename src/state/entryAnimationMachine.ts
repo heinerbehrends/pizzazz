@@ -8,96 +8,23 @@ export const entryAnimationMachine = createMachine(
     initial: "running",
     states: {
       running: {
-        invoke: [
-          {
-            id: "sendUpdateLetters",
-            src: "sendUpdateLetters",
-          },
-        ],
-        initial: "7",
-        onDone: { target: "ended" },
-        states: {
-          7: {
-            on: {
-              updateLetters: {
-                actions: ["sendAnimate"],
-              },
-            },
-            after: {
-              400: "6",
-            },
-            entry: "updateIndex",
-          },
-          6: {
-            on: {
-              updateLetters: {
-                actions: ["sendAnimate"],
-              },
-            },
-            after: {
-              400: "5",
-            },
-            entry: "updateIndex",
-          },
-          5: {
-            on: {
-              updateLetters: {
-                actions: ["sendAnimate"],
-              },
-            },
-            after: {
-              400: "4",
-            },
-            entry: "updateIndex",
-          },
-          4: {
-            on: {
-              updateLetters: {
-                actions: ["sendAnimate"],
-              },
-            },
-            after: {
-              400: "3",
-            },
-            entry: "updateIndex",
-          },
-          3: {
-            on: {
-              updateLetters: {
-                actions: ["sendAnimate"],
-              },
-            },
-            after: {
-              400: "2",
-            },
-            entry: "updateIndex",
-          },
-          2: {
-            on: {
-              updateLetters: {
-                actions: ["sendAnimate"],
-              },
-            },
-            after: {
-              400: "1",
-            },
-            entry: "updateIndex",
-          },
-          1: {
-            on: {
-              updateLetters: {
-                actions: ["sendAnimate"],
-              },
-            },
-            after: {
-              400: "0",
-            },
-            entry: "updateIndex",
-          },
-          0: {
-            type: "final",
+        always: { target: "ended", cond: "isAnimationOver" },
+        invoke: {
+          id: "sendUpdateLetters",
+          src: "sendUpdateLetters",
+        },
+        on: {
+          updateLetters: {
+            actions: ["sendAnimate"],
           },
         },
+        after: {
+          400: {
+            target: "running",
+            actions: ["updateIndex"],
+          },
+        },
+        onDone: { target: "ended" },
       },
       ended: {
         type: "final",
@@ -114,10 +41,6 @@ export const entryAnimationMachine = createMachine(
           }
         | { type: "updateLetters" },
       services: {
-        sendStopNextLetter: {} as {
-          src: () => (callback: ({}) => {}) => void;
-          data: null;
-        },
         sendUpdateLetters: {} as {
           src: () => (callback: ({}) => {}) => void;
           data: null;
@@ -128,8 +51,7 @@ export const entryAnimationMachine = createMachine(
       },
       events: {} as
         | { type: "updateLetters" }
-        | { type: "sendAnimate"; index: number }
-        | { type: "stopNextLetter" },
+        | { type: "sendAnimate"; index: number },
     },
     tsTypes: {} as import("./entryAnimationMachine.typegen").Typegen0,
     predictableActionArguments: true,
@@ -157,6 +79,9 @@ export const entryAnimationMachine = createMachine(
         );
         return () => clearInterval(intervalId);
       },
+    },
+    guards: {
+      isAnimationOver: (context) => context.index > 7,
     },
   }
 );

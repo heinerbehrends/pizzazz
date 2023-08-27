@@ -19,10 +19,6 @@ export const gameMachine = createMachine(
           {
             id: "entryAnimationMachine",
             src: entryAnimationMachine,
-            data: {
-              letters: (context: GameMachineContext) => context.letters,
-              index: (context: GameMachineContext) => context.index,
-            },
             onDone: { target: "dragAndDrop" },
           },
           {
