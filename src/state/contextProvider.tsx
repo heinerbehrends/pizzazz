@@ -6,8 +6,6 @@ import usePartySocket from "partysocket/react";
 import type PartySocket from "partysocket";
 
 export const GlobalStateContext = createContext({
-  // dragAndDropService: {} as InterpreterFrom<typeof dragAndDropMachine>,
-  // entryAnimationService: {} as InterpreterFrom<typeof entryAnimationMachine>,
   gameService: {} as InterpreterFrom<typeof gameMachine>,
   socket: {} as PartySocket,
 });
@@ -17,13 +15,10 @@ export function GlobalStateProvider({
 }: {
   children: React.ReactNode;
 }) {
-  // const dragAndDropService = useInterpret(dragAndDropMachine);
-  // const entryAnimationService = useInterpret(entryAnimationMachine);
   const socket = usePartySocket({
     host: "localhost:1999",
     room: "pizzazz-room",
   });
-  console.log(socket);
   const gameService = useInterpret(gameMachine(socket));
 
   return (

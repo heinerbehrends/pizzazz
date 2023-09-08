@@ -91,8 +91,10 @@ export function PizzazzTile({
       tile.removeEventListener("mousedown", sendDnD);
     };
   }, [tileRef.current, sendDnD]);
+
   const { x, y } = stateDnD.context.distanceFromDragStart;
   const isDragTile = index === stateDnD.context.dragTileIndex;
+
   return (
     <div
       ref={tileRef}

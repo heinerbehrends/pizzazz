@@ -33,6 +33,7 @@ export const dragAndDropMachine = createMachine(
         y: 0,
       },
       dragTileIndex: undefined,
+      socket: {} as PartySocket,
     },
     states: {
       idle: {
@@ -62,6 +63,7 @@ export const dragAndDropMachine = createMachine(
         dragStartMousePosition: {} as { x: number; y: number },
         distanceFromDragStart: {} as { x: number; y: number },
         dragTileIndex: undefined as number | undefined,
+        socket: {} as PartySocket,
       },
       events: {} as MouseEvent,
     },
@@ -93,7 +95,6 @@ export const dragAndDropMachine = createMachine(
       })),
 
       updateLetters: sendParent((context, event: MouseEvent) => {
-        console.log(context.socket);
         context.socket.send(
           JSON.stringify({ type: "updateLetters", letters: "ipzzazz" })
         );

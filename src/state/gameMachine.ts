@@ -17,14 +17,15 @@ export function gameMachine(socket: PartySocket) {
       invoke: {
         id: "socket",
         src: (context, event) => (callback, onEvent) => {
-          console.log("Hello from src");
-          socket.addEventListener("message", (evt) => {
-            console.log(evt.data); // "hello from room: my-room"
+          socket.addEventListener("message", (event) => {
+            const message = JSON.parse(event.data) as {
+              type: "randomLetters";
+              letters: string;
+            };
+            if (message.type === "randomLetters") {
+              console.log("Random letters: ", message.letters);
+            }
           });
-          // You can also send messages to the server
-          socket.send(
-            JSON.stringify({ type: "updateLetters", letters: "ipzzazz" })
-          );
         },
       },
       states: {
@@ -40,6 +41,7 @@ export function gameMachine(socket: PartySocket) {
               src: dragAndDropMachine,
               data: {
                 letters: (context: GameMachineContext) => context.letters,
+                socket: () => socket,
               },
             },
           ],
