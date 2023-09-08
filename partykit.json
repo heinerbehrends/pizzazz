@@ -1,0 +1,10 @@
+{
+  "name": "my-cool-partykit-project",
+  "main": "server.ts", 
+  "vars": {
+    "MY_VAR": "my-value" 
+  },
+  "define": {
+    "process.env.MAGIC_NUMBER": "42" 
+  }
+}
