@@ -1,6 +1,7 @@
 import { assign, createMachine } from "xstate";
 import { getDragDistance, getDropTileIndex } from "./dragAndDropLogic";
 import { sendParent } from "xstate/lib/actions";
+import type PartySocket from "partysocket";
 
 export type DragAndDropContext = {
   letters: string;
@@ -13,6 +14,7 @@ export type DragAndDropContext = {
     y: number;
   };
   dragTileIndex: number | undefined;
+  socket: PartySocket;
 };
 
 export const dragAndDropMachine = createMachine(
@@ -59,7 +61,7 @@ export const dragAndDropMachine = createMachine(
         letters: "pizzazz",
         dragStartMousePosition: {} as { x: number; y: number },
         distanceFromDragStart: {} as { x: number; y: number },
-        dragTileIndex: -1 as number | undefined,
+        dragTileIndex: undefined as number | undefined,
       },
       events: {} as MouseEvent,
     },
@@ -91,8 +93,12 @@ export const dragAndDropMachine = createMachine(
       })),
 
       updateLetters: sendParent((context, event: MouseEvent) => {
+        console.log(context.socket);
+        context.socket.send(
+          JSON.stringify({ type: "updateLetters", letters: "ipzzazz" })
+        );
         return {
-          type: "letterDropped" as const,
+          type: "letterDropped",
           dragIndex: Number((event?.target as HTMLDivElement).dataset.index),
           dropIndex: getDropTileIndex(context, event),
         };

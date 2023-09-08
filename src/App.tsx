@@ -6,6 +6,7 @@ import {
   GlobalStateContext,
   GlobalStateProvider,
 } from "./state/contextProvider";
+import usePartySocket from "partysocket/react";
 
 const letterIds = [
   "zeroth",
@@ -37,15 +38,13 @@ const PizzazzBoardStyles = css({
 
 function PizzazzBoard() {
   const { gameService } = useContext(GlobalStateContext);
-  const [gameState, send] = useActor(gameService);
-  const [stateDnD, sendDnD] = useActor(gameState.children.dragAndDropMachine);
+  const [gameState] = useActor(gameService);
+  const [, sendDnD] = useActor(gameState.children.dragAndDropMachine);
 
-  // const [, sendDnD] = useActor(dragAndDropService);
   // gameService.onTransition((state) => console.log("game state", state.value));
   // dragAndDropService.onTransition((state) =>
   //   console.log("drag and drop context", state.context)
   // );
-
   useEffect(() => {
     const body = document.body;
     body.addEventListener("mouseup", sendDnD);
