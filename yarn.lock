@@ -5902,6 +5902,11 @@ remark-smartypants@^2.0.0:
     retext-smartypants "^5.1.0"
     unist-util-visit "^4.1.0"
 
+remeda@^1.26.0:
+  version "1.26.0"
+  resolved "https://registry.yarnpkg.com/remeda/-/remeda-1.26.0.tgz#61c9b7e5ec3832a5c588ea354552695594aed944"
+  integrity sha512-v+Qbi2krvXknCvG60gviLUSBJQPxXUVBAvi64m3Awoua3X+ygAmPYPrbFgqwPpiM1tBHNBVrHPBKtza7if+HyQ==
+
 require-from-string@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/require-from-string/-/require-from-string-2.0.2.tgz#89a7fdd938261267318eafe14f9c32e598c36909"

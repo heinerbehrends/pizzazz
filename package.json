@@ -17,6 +17,7 @@
     "partysocket": "^0.0.0-fa8d73a",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "remeda": "^1.26.0",
     "xstate": "^4.38.2"
   },
   "devDependencies": {
