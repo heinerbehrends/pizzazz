@@ -6,7 +6,6 @@ import {
   GlobalStateContext,
   GlobalStateProvider,
 } from "./state/contextProvider";
-import usePartySocket from "partysocket/react";
 
 const letterIds = [
   "zeroth",
@@ -63,6 +62,7 @@ function PizzazzBoard() {
           letter={letter}
           index={index}
           data-id={index}
+          isValid={index < gameState.context.validWordLength}
         />
       ))}
     </div>

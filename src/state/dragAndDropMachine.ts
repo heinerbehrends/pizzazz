@@ -95,9 +95,6 @@ export const dragAndDropMachine = createMachine(
       })),
 
       updateLetters: sendParent((context, event: MouseEvent) => {
-        context.socket.send(
-          JSON.stringify({ type: "updateLetters", letters: "ipzzazz" })
-        );
         return {
           type: "letterDropped",
           dragIndex: Number((event?.target as HTMLDivElement).dataset.index),

@@ -3,10 +3,16 @@ import { entryAnimationMachine } from "./entryAnimationMachine";
 import { dragAndDropMachine } from "./dragAndDropMachine";
 import { swapLetters } from "./dragAndDropLogic";
 import PartySocket from "partysocket";
+import { ServerMessage, validWordLengthMessage } from "../../server";
 
 type GameMachineContext = {
   letters: string;
-  index: number;
+  validWordLength: number;
+};
+
+export type UpdateLettersMessage = {
+  type: "updateLetters";
+  letters: string;
 };
 
 export function gameMachine(socket: PartySocket) {
@@ -16,12 +22,14 @@ export function gameMachine(socket: PartySocket) {
       initial: "entryAnimation",
       invoke: {
         id: "socket",
-        src: (context, event) => (callback, onEvent) => {
+        // src: (context, event) => (callback, onEvent) => {
+        src: () => (callback) => {
           socket.addEventListener("message", (event) => {
-            const message = JSON.parse(event.data) as {
-              type: "randomLetters";
-              letters: string;
-            };
+            const message = JSON.parse(event.data) as ServerMessage;
+            if (message.type === "validWordLength") {
+              callback(message);
+              console.log(message.length);
+            }
             if (message.type === "randomLetters") {
               console.log("Random letters: ", message.letters);
             }
@@ -65,14 +73,17 @@ export function gameMachine(socket: PartySocket) {
           on: {
             letterDropped: {
               target: "dragAndDrop",
-              actions: ["updateLetters"],
+              actions: ["updateLetters", "sendLettersToServer"],
+            },
+            validWordLength: {
+              actions: ["setValidWordLength"],
             },
           },
         },
       },
       context: {
         letters: "pizzazz",
-        index: 0,
+        validWordLength: 0,
       },
       schema: {
         services: {
@@ -89,14 +100,13 @@ export function gameMachine(socket: PartySocket) {
             };
           },
         },
-        actions: {} as
-          | { type: "animate"; index: number }
-          | { type: "letterDropped"; dragIndex: number; dropIndex: number },
+        actions: {} as { type: "animate"; index: number },
         context: {
           letters: "pizzazz" as string,
-          index: 0 as number,
+          validWordLength: 0 as number,
         },
         events: {} as
+          | ServerMessage
           | LetterDroppedEvent
           | { type: "animate"; index: number }
           | MouseEvent,
@@ -107,7 +117,13 @@ export function gameMachine(socket: PartySocket) {
     {
       actions: {
         updateLetters: assign(updateLetters),
+        sendLettersToServer: (context) => {
+          socket.send(
+            JSON.stringify({ type: "updateLetters", letters: context.letters })
+          );
+        },
         showNextFrame: assign(showNextFrame),
+        setValidWordLength: assign(updateValidWordLength),
       },
     }
   );
@@ -152,5 +168,15 @@ function showNextFrame(context: GameMachineContext, event: AnimateEvent) {
   return {
     ...context,
     letters: staticPart + randomPart,
+  };
+}
+
+function updateValidWordLength(
+  context: GameMachineContext,
+  event: validWordLengthMessage
+) {
+  return {
+    ...context,
+    validWordLength: event.length,
   };
 }

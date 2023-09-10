@@ -6,7 +6,7 @@ import { useActor } from "@xstate/react";
 type PizzazzTileProps = {
   letter: string;
   index: number;
-  isValid?: boolean;
+  isValid: boolean;
 };
 
 const letterValues = {
@@ -70,11 +70,7 @@ const letterContainerStyles = css({
   userSelect: "none",
 });
 
-export function PizzazzTile({
-  letter,
-  isValid = false,
-  index,
-}: PizzazzTileProps) {
+export function PizzazzTile({ letter, isValid, index }: PizzazzTileProps) {
   const { gameService } = useContext(GlobalStateContext);
   const [state] = useActor(gameService);
   const [stateDnD, sendDnD] = useActor(state.children.dragAndDropMachine);
