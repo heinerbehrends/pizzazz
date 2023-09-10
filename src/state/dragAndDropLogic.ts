@@ -38,10 +38,7 @@ function getElementCenter(event: MouseEvent) {
   };
 }
 
-export function getDragTileCenter(
-  context: DragAndDropContext,
-  event: MouseEvent
-) {
+export function getDragTileCenter(event: MouseEvent) {
   // const { x: dragX, y: dragY } = getDragDistance(context, event);
   const elementCenter = getElementCenter(event);
   return {
@@ -59,7 +56,7 @@ export function getDropTileIndex(
   const dropTargetBounds = siblings.map((sibling) =>
     sibling.getBoundingClientRect()
   );
-  const dragTileCenter = getDragTileCenter(context, event);
+  const dragTileCenter = getDragTileCenter(event);
   const dropIndex = dropTargetBounds
     .map((dropBounds, index) => {
       // to prevent the tile from dropping on itself

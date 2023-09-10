@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext } from "react";
 import { useInterpret } from "@xstate/react";
 import { InterpreterFrom } from "xstate";
 import { gameMachine } from "./gameMachine";
