@@ -4,10 +4,12 @@ import { dragAndDropMachine } from "./dragAndDropMachine";
 import { swapLetters } from "./dragAndDropLogic";
 import PartySocket from "partysocket";
 import { ServerMessage, validLengthAndDefMessage } from "../../server";
+import { getValidWordLength } from "../srcServer/findValidWords";
 
 type GameMachineContext = {
   letters: string;
   validWordLength: number;
+  message: string;
 };
 
 export type UpdateLettersMessage = {
@@ -76,7 +78,7 @@ export function gameMachine(socket: PartySocket) {
               actions: ["updateLetters", "sendLettersToServer"],
             },
             validLengthAndDef: {
-              actions: ["setValidWordLength"],
+              actions: ["setValidLengthAndDef"],
             },
           },
         },
@@ -84,6 +86,7 @@ export function gameMachine(socket: PartySocket) {
       context: {
         letters: "pizzazz",
         validWordLength: 0,
+        message: "Welcome to Pizzazz",
       },
       schema: {
         services: {
@@ -104,6 +107,7 @@ export function gameMachine(socket: PartySocket) {
         context: {
           letters: "pizzazz" as string,
           validWordLength: 0 as number,
+          message: "" as string,
         },
         events: {} as
           | ServerMessage
@@ -123,7 +127,7 @@ export function gameMachine(socket: PartySocket) {
           );
         },
         showNextFrame: assign(showNextFrame),
-        setValidWordLength: assign(updateValidWordLength),
+        setValidLengthAndDef: assign(updateValidLengthAndDef),
       },
     }
   );
@@ -171,13 +175,15 @@ function showNextFrame(context: GameMachineContext, event: AnimateEvent) {
   };
 }
 
-function updateValidWordLength(
+function updateValidLengthAndDef(
   context: GameMachineContext,
   event: validLengthAndDefMessage
 ) {
   console.log(event);
+  const hasNoDefinition = event.length > 0 && event.definition === null;
   return {
     ...context,
     validWordLength: event.length,
+    message: hasNoDefinition ? "no definition found" : event.definition,
   };
 }

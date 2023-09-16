@@ -6,6 +6,7 @@ import {
   GlobalStateContext,
   GlobalStateProvider,
 } from "./state/contextProvider";
+import { Message } from "./components/Messsage";
 
 const letterIds = [
   "zeroth",
@@ -55,16 +56,29 @@ function PizzazzBoard() {
   });
 
   return (
-    <div className={PizzazzBoardStyles}>
-      {gameState.context.letters.split("").map((letter, index) => (
-        <PizzazzTile
-          key={letterIds[index]}
-          letter={letter}
-          index={index}
-          data-id={index}
-          isValid={index < gameState.context.validWordLength}
-        />
-      ))}
+    <div
+      className={css({
+        marginLeft: "auto",
+        marginRight: "auto",
+        textAlign: "center",
+        maxWidth: "500px",
+        marginTop: "18vw",
+        boxSizing: "border-box",
+        md: { marginTop: "3rem" },
+      })}
+    >
+      <Message />
+      <div className={PizzazzBoardStyles}>
+        {gameState.context.letters.split("").map((letter, index) => (
+          <PizzazzTile
+            key={letterIds[index]}
+            letter={letter}
+            index={index}
+            data-id={index}
+            isValid={index < gameState.context.validWordLength}
+          />
+        ))}
+      </div>
     </div>
   );
 }
