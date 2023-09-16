@@ -1,6 +1,7 @@
 import { getValidWordLength } from "./src/srcServer/findValidWords";
 import { UpdateLettersMessage } from "./src/state/gameMachine";
 import type { PartyConnection, PartyKitServer } from "partykit/server";
+import sqlite3 from "sqlite3";
 
 export type validWordLengthMessage = {
   type: "validWordLength";
@@ -10,7 +11,17 @@ export type ServerMessage =
   | validWordLengthMessage
   | { type: "randomLetters"; letters: string };
 type ClientMessage = UpdateLettersMessage;
-
+// does not work because server.js is not run on a node process
+// let dictionaryDB = new sqlite3.Database(
+//   "./src/srcServer/eng_dictionary.db",
+//   sqlite3.OPEN_READWRITE,
+//   (err) => {
+//     if (err) {
+//       console.error(err.message);
+//     }
+//     console.log("Connected to the dictionary database.");
+//   }
+// );
 export default {
   async onConnect(connection, room, context) {
     connection.send(
@@ -46,6 +57,7 @@ export default {
       );
     });
   },
+  // todo: return index.html from dist folder
   // async onRequest(request, room) {
   //   return new Response("hello from room: " + room.id);
   // },

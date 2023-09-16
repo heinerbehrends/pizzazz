@@ -12,12 +12,14 @@
     "prepare": "panda codegen"
   },
   "dependencies": {
+    "@types/sqlite3": "^3.1.8",
     "@xstate/react": "^3.2.2",
     "partykit": "^0.0.0-fa8d73a",
     "partysocket": "^0.0.0-fa8d73a",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "remeda": "^1.26.0",
+    "sqlite3": "^5.1.6",
     "xstate": "^4.38.2"
   },
   "devDependencies": {
