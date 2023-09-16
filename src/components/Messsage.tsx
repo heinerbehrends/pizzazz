@@ -9,6 +9,7 @@ const messageContainerStyles = css({
 });
 
 const messageStyles = css({
+  display: "inline-block",
   fontSize: "4vw",
   fontWeight: 300,
   fontFamily: "Roboto, sans-serif",
@@ -20,7 +21,7 @@ const messageStyles = css({
   },
   md: {
     fontSize: "1.1rem",
-    padding: "0.8rem 1.6rem",
+    padding: "0.5rem 1rem",
   },
 });
 
@@ -31,7 +32,7 @@ export function Message() {
   const message = state.context.message;
   return (
     <div className={messageContainerStyles}>
-      <span className={messageStyles}>{message}</span>
+      <p className={messageStyles}>{message}</p>
     </div>
   );
 }
