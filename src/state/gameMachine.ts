@@ -3,7 +3,7 @@ import { entryAnimationMachine } from "./entryAnimationMachine";
 import { dragAndDropMachine } from "./dragAndDropMachine";
 import { swapLetters } from "./dragAndDropLogic";
 import PartySocket from "partysocket";
-import { ServerMessage, validWordLengthMessage } from "../../server";
+import { ServerMessage, validLengthAndDefMessage } from "../../server";
 
 type GameMachineContext = {
   letters: string;
@@ -26,9 +26,9 @@ export function gameMachine(socket: PartySocket) {
         src: () => (callback) => {
           socket.addEventListener("message", (event) => {
             const message = JSON.parse(event.data) as ServerMessage;
-            if (message.type === "validWordLength") {
+            if (message.type === "validLengthAndDef") {
               callback(message);
-              console.log(message.length);
+              console.log(message.definition);
             }
             if (message.type === "randomLetters") {
               console.log("Random letters: ", message.letters);
@@ -75,7 +75,7 @@ export function gameMachine(socket: PartySocket) {
               target: "dragAndDrop",
               actions: ["updateLetters", "sendLettersToServer"],
             },
-            validWordLength: {
+            validLengthAndDef: {
               actions: ["setValidWordLength"],
             },
           },
@@ -173,8 +173,9 @@ function showNextFrame(context: GameMachineContext, event: AnimateEvent) {
 
 function updateValidWordLength(
   context: GameMachineContext,
-  event: validWordLengthMessage
+  event: validLengthAndDefMessage
 ) {
+  console.log(event);
   return {
     ...context,
     validWordLength: event.length,

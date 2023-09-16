@@ -56,5 +56,3 @@ export function getValidWordLength(string: string) {
     )?.length || 0
   );
 }
-
-console.log(findValidWords("pizzazz", dictWithSortedKeys));
