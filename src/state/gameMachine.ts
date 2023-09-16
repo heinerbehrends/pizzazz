@@ -4,7 +4,7 @@ import { dragAndDropMachine } from "./dragAndDropMachine";
 import { swapLetters } from "./dragAndDropLogic";
 import PartySocket from "partysocket";
 import { ServerMessage, validLengthAndDefMessage } from "../../server";
-import { getValidWordLength } from "../srcServer/findValidWords";
+import * as R from "remeda";
 
 type GameMachineContext = {
   letters: string;
@@ -22,22 +22,31 @@ export function gameMachine(socket: PartySocket) {
     {
       id: "gameMachine",
       initial: "entryAnimation",
-      invoke: {
-        id: "socket",
-        // src: (context, event) => (callback, onEvent) => {
-        src: () => (callback) => {
-          socket.addEventListener("message", (event) => {
-            const message = JSON.parse(event.data) as ServerMessage;
-            if (message.type === "validLengthAndDef") {
-              callback(message);
-              console.log(message.definition);
-            }
-            if (message.type === "randomLetters") {
-              console.log("Random letters: ", message.letters);
-            }
-          });
+      invoke: [
+        {
+          id: "socket",
+          // src: (context, event) => (callback, onEvent) => {
+          src: () => (callback) => {
+            socket.addEventListener("message", (event) => {
+              const message = JSON.parse(event.data) as ServerMessage;
+              if (message.type === "validLengthAndDef") {
+                callback(message);
+              }
+              if (message.type === "randomLetters") {
+                console.log("Random letters: ", message.letters);
+              }
+            });
+          },
         },
-      },
+        {
+          id: "dragAndDropMachine",
+          src: dragAndDropMachine,
+          data: {
+            letters: (context: GameMachineContext) => context.letters,
+            socket: () => socket,
+          },
+        },
+      ],
       states: {
         entryAnimation: {
           invoke: [
@@ -45,14 +54,6 @@ export function gameMachine(socket: PartySocket) {
               id: "entryAnimationMachine",
               src: entryAnimationMachine,
               onDone: { target: "dragAndDrop" },
-            },
-            {
-              id: "dragAndDropMachine",
-              src: dragAndDropMachine,
-              data: {
-                letters: (context: GameMachineContext) => context.letters,
-                socket: () => socket,
-              },
             },
           ],
           on: {
@@ -62,16 +63,6 @@ export function gameMachine(socket: PartySocket) {
           },
         },
         dragAndDrop: {
-          invoke: [
-            {
-              id: "dragAndDropMachine",
-              src: dragAndDropMachine,
-              data: {
-                letters: (context: GameMachineContext) => context.letters,
-                socket,
-              },
-            },
-          ],
           on: {
             letterDropped: {
               target: "dragAndDrop",
@@ -138,10 +129,6 @@ type LetterDroppedEvent = {
   dragIndex: number;
   dropIndex: number;
 };
-type AnimateEvent = {
-  type: "animate";
-  index: number;
-};
 
 function updateLetters(context: GameMachineContext, event: LetterDroppedEvent) {
   if (event.dropIndex === null) {
@@ -158,6 +145,11 @@ function updateLetters(context: GameMachineContext, event: LetterDroppedEvent) {
   };
 }
 
+type AnimateEvent = {
+  type: "animate";
+  index: number;
+};
+
 function showNextFrame(context: GameMachineContext, event: AnimateEvent) {
   const abc = "abcdefghijklmnopqrstuvwxyz";
   const getRandomIndex = (string: string) =>
@@ -165,10 +157,11 @@ function showNextFrame(context: GameMachineContext, event: AnimateEvent) {
   const getRandomLetter = (string: string) => string[getRandomIndex(string)];
   const getRandomAbc = () => getRandomLetter(abc);
   const staticPart = "pizzazz".substring(0, event.index);
-  const randomPart = Array(7 - event.index)
-    .fill(null)
-    .map(getRandomAbc)
-    .join("");
+  const randomPart = R.pipe(
+    Array(7 - event.index).fill(null),
+    R.map(getRandomAbc),
+    (array) => array.join("")
+  );
   return {
     ...context,
     letters: staticPart + randomPart,
@@ -179,11 +172,19 @@ function updateValidLengthAndDef(
   context: GameMachineContext,
   event: validLengthAndDefMessage
 ) {
-  console.log(event);
-  const hasNoDefinition = event.length > 0 && event.definition === null;
+  function getMessage(event: validLengthAndDefMessage) {
+    const isValid = event.length > 0;
+    if (event.definition) {
+      return event.definition;
+    }
+    if (isValid) {
+      return "no definition found";
+    }
+    return "find a valid word";
+  }
   return {
     ...context,
     validWordLength: event.length,
-    message: hasNoDefinition ? "no definition found" : event.definition,
+    message: getMessage(event),
   };
 }
