@@ -101,6 +101,7 @@ export function generateRandomLetters() {
     Array(7),
     R.map.indexed(grabTwoOrThreeVowels),
     R.shuffle(),
-    replaceWildcard
+    replaceWildcard,
+    R.join("")
   );
 }
