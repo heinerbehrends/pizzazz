@@ -10,6 +10,7 @@ type GameMachineContext = {
   letters: string;
   validWordLength: number;
   message: string;
+  definition: string;
 };
 
 export type UpdateLettersMessage = {
@@ -78,6 +79,7 @@ export function gameMachine(socket: PartySocket) {
         letters: "pizzazz",
         validWordLength: 0,
         message: "Welcome to Pizzazz",
+        definition: "",
       },
       schema: {
         services: {
@@ -99,6 +101,7 @@ export function gameMachine(socket: PartySocket) {
           letters: "pizzazz" as string,
           validWordLength: 0 as number,
           message: "" as string,
+          definition: "" as string,
         },
         events: {} as
           | ServerMessage
@@ -172,7 +175,7 @@ function updateValidLengthAndDef(
   context: GameMachineContext,
   event: validLengthAndDefMessage
 ) {
-  function getMessage(event: validLengthAndDefMessage) {
+  function getDefinition(event: validLengthAndDefMessage) {
     const isValid = event.length > 0;
     if (event.definition) {
       return event.definition;
@@ -185,6 +188,6 @@ function updateValidLengthAndDef(
   return {
     ...context,
     validWordLength: event.length,
-    message: getMessage(event),
+    definition: getDefinition(event),
   };
 }
