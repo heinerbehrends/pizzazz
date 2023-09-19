@@ -10,12 +10,19 @@ export type validLengthAndDefMessage = {
   length: number;
   definition: string;
 };
-export type ServerMessage =
-  | validLengthAndDefMessage
-  | { type: "randomLetters"; letters: string };
-type ClientMessage = UpdateLettersMessage;
+export type TimeAndLettersReply = {
+  type: "timeAndLettersReply";
+  letters: string;
+  time: number;
+};
 
-function reply(room: Party, connection: PartyConnection) {
+export type ServerMessage = validLengthAndDefMessage | TimeAndLettersReply;
+
+export type NewPlayerMessage = { type: "newPlayer"; name: string };
+
+type ClientMessage = UpdateLettersMessage | NewPlayerMessage;
+
+function toSender(room: Party, connection: PartyConnection) {
   return Array.from(room.getConnections())
     .filter((bla: PartyConnection) => bla.id !== connection.id)
     .map((connection) => connection.id);
@@ -34,21 +41,22 @@ function retrieveDefinition(letters: string, validWordLength: number) {
   return null;
 }
 
-const serverService = interpret(serverMachine()).start();
-serverService.onTransition((state) =>
-  console.log(JSON.stringify(state.children))
-);
+// serverService.onTransition((state) =>
+//   console.log(JSON.stringify(state.children))
+// );
 
 export default {
   // async onConnect(connection, room, context) {
   async onConnect(connection, room) {
-    connection.send(
-      JSON.stringify({
-        type: "randomLetters",
-        letters: "dsfsdfs",
-      })
-    );
-    console.log("on connect");
+    const serverService = interpret(serverMachine()).start();
+    serverService.onEvent((event) => {
+      console.log("serverServiceEvent: ", event);
+      if (event.type === "timeAndLettersReply") {
+        room.broadcast(JSON.stringify(event), toSender(room, connection));
+      }
+    });
+
+    console.log("onConnect", serverService);
     if ([...room.getConnections()].length === 1) {
       serverService.send({ type: "userConnected" });
     }
@@ -58,6 +66,7 @@ export default {
       }
     });
     connection.addEventListener("message", (event) => {
+      console.log("message from client: ", JSON.parse(event.data as string));
       if (typeof event.data !== "string") {
         return;
       }
@@ -65,15 +74,17 @@ export default {
 
       if (message.type === "updateLetters") {
         const validWordLength = getValidWordLength(message.letters);
-
         room.broadcast(
           JSON.stringify({
             type: "validLengthAndDef",
             length: validWordLength,
             definition: retrieveDefinition(message.letters, validWordLength),
           }),
-          reply(room, connection)
+          toSender(room, connection)
         );
+      }
+      if (message.type === "newPlayer") {
+        serverService.send(message);
       }
       room.broadcast(
         `message from client: ${event.data} (id: ${connection.id}")`,

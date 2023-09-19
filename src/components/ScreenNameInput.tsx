@@ -1,6 +1,7 @@
 import { ChangeEvent, FormEvent, useContext, useState } from "react";
 import { css } from "../../styled-system/css";
 import { GlobalStateContext } from "../state/contextProvider";
+import { useActor } from "@xstate/react";
 
 const inputStyles = {
   display: "inline-block",
@@ -68,45 +69,50 @@ const textInputStyles = css({
 });
 export function ScreenNameInput() {
   const [input, setInput] = useState("");
-  const { socket } = useContext(GlobalStateContext);
+  const { socket, gameService } = useContext(GlobalStateContext);
+  const [state] = useActor(gameService);
   const handleChange = ({ target: { value } }: ChangeEvent<HTMLInputElement>) =>
     setInput(value);
-  return (
-    <div className={formContainerStyles}>
-      <form
-        className={formStyles}
-        id="screenName"
-        name="screenName"
-        autoComplete="off"
-        onSubmit={(event: FormEvent<HTMLFormElement>) => {
-          event.preventDefault();
-          socket.send(
-            JSON.stringify({
-              type: "newPlayerEvent",
-              screenName: input,
-            })
-          );
-        }}
-      >
-        <label className={hiddenLabelStyles} htmlFor="enter-screen-name">
-          Enter screen name
-        </label>
-        <div className={formGroupStyles}>
-          <input
-            className={textInputStyles}
-            placeholder="Enter screen name to start"
-            onChange={handleChange}
-            type="text"
-            id="enter-screen-name"
-            name="screenName"
-            autoFocus
-            value={input}
-          />
-          <button type="submit" value="Go" className={buttonStyles}>
-            Go
-          </button>
-        </div>
-      </form>
-    </div>
-  );
+  if (state.value === "onboarding") {
+    return (
+      <div className={formContainerStyles}>
+        <form
+          className={formStyles}
+          id="screenName"
+          name="screenName"
+          autoComplete="off"
+          onSubmit={(event: FormEvent<HTMLFormElement>) => {
+            console.log("onSubmit");
+            event.preventDefault();
+            socket.send(
+              JSON.stringify({
+                type: "newPlayer",
+                screenName: input,
+              })
+            );
+          }}
+        >
+          <label className={hiddenLabelStyles} htmlFor="enter-screen-name">
+            Enter screen name
+          </label>
+          <div className={formGroupStyles}>
+            <input
+              className={textInputStyles}
+              placeholder="Enter screen name to start"
+              onChange={handleChange}
+              type="text"
+              id="enter-screen-name"
+              name="screenName"
+              autoFocus
+              value={input}
+            />
+            <button type="submit" value="Go" className={buttonStyles}>
+              Go
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+  return null;
 }
