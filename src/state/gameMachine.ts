@@ -22,7 +22,7 @@ export function gameMachine(socket: PartySocket) {
   return createMachine(
     {
       id: "gameMachine",
-      initial: "entryAnimation",
+      initial: "onboarding",
       invoke: [
         {
           id: "socket",
@@ -30,11 +30,17 @@ export function gameMachine(socket: PartySocket) {
           src: () => (callback) => {
             socket.addEventListener("message", (event) => {
               const message = JSON.parse(event.data) as ServerMessage;
+              console.log(message);
               if (message.type === "validLengthAndDef") {
                 callback(message);
               }
-              if (message.type === "randomLetters") {
-                console.log("Random letters: ", message.letters);
+              if (message.type === "timeAndLettersReply") {
+                console.log(
+                  "Random letters: ",
+                  message.letters,
+                  "\nTime: ",
+                  message.time
+                );
               }
             });
           },
@@ -49,12 +55,12 @@ export function gameMachine(socket: PartySocket) {
         },
       ],
       states: {
-        entryAnimation: {
+        onboarding: {
           invoke: [
             {
               id: "entryAnimationMachine",
               src: entryAnimationMachine,
-              onDone: { target: "dragAndDrop" },
+              // onDone: { target: "dragAndDrop" },
             },
           ],
           on: {
@@ -79,7 +85,7 @@ export function gameMachine(socket: PartySocket) {
         letters: "pizzazz",
         validWordLength: 0,
         message: "Welcome to Pizzazz",
-        definition: "",
+        definition: "—",
       },
       schema: {
         services: {
@@ -131,6 +137,12 @@ type LetterDroppedEvent = {
   type: "letterDropped";
   dragIndex: number;
   dropIndex: number;
+};
+
+type StartGameMessage = {
+  type: "startGame";
+  time: number;
+  randomLetters: string;
 };
 
 function updateLetters(context: GameMachineContext, event: LetterDroppedEvent) {
