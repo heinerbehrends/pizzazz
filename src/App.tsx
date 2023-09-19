@@ -7,6 +7,9 @@ import {
   GlobalStateProvider,
 } from "./state/contextProvider";
 import { Message } from "./components/Messsage";
+import { ScreenNameInput } from "./components/ScreenNameInput";
+import { Definition } from "./components/Definitions";
+import { ScrabbleBoard } from "./components/ScrabbleBoard";
 
 const letterIds = [
   "zeroth",
@@ -36,15 +39,22 @@ const PizzazzBoardStyles = css({
   },
 });
 
-function PizzazzBoard() {
+const containerStyles = css({
+  marginLeft: "auto",
+  marginRight: "auto",
+  textAlign: "center",
+  maxWidth: "500px",
+  marginTop: "18vw",
+  boxSizing: "border-box",
+  marginBottom: "4.5vw",
+  md: { marginTop: "3rem", marginBottom: "1.5rem" },
+});
+
+export function LetterRow() {
   const { gameService } = useContext(GlobalStateContext);
   const [gameState] = useActor(gameService);
   const [, sendDnD] = useActor(gameState.children.dragAndDropMachine);
 
-  // gameService.onTransition((state) => console.log("game state", state.value));
-  // dragAndDropService.onTransition((state) =>
-  //   console.log("drag and drop context", state.context)
-  // );
   useEffect(() => {
     const body = document.body;
     body.addEventListener("mouseup", sendDnD);
@@ -56,18 +66,7 @@ function PizzazzBoard() {
   });
 
   return (
-    <div
-      className={css({
-        marginLeft: "auto",
-        marginRight: "auto",
-        textAlign: "center",
-        maxWidth: "500px",
-        marginTop: "18vw",
-        boxSizing: "border-box",
-        md: { marginTop: "3rem" },
-      })}
-    >
-      <Message />
+    <div className={containerStyles}>
       <div className={PizzazzBoardStyles}>
         {gameState.context.letters.split("").map((letter, index) => (
           <PizzazzTile
@@ -87,7 +86,11 @@ function App() {
   return (
     <GlobalStateProvider>
       <main className={mainContainerStyles}>
-        <PizzazzBoard />
+        <Message />
+        <LetterRow />
+        {/* <ScrabbleBoard /> */}
+        <Definition />
+        <ScreenNameInput />
       </main>
     </GlobalStateProvider>
   );
