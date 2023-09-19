@@ -4,6 +4,7 @@ import { GlobalStateContext } from "../state/contextProvider";
 import { css } from "../../styled-system/css";
 
 const messageContainerStyles = css({
+  textAlign: "center",
   marginBottom: "9vw",
   md: { marginBottom: "3rem" },
 });
