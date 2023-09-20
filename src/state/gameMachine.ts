@@ -11,11 +11,7 @@ type GameMachineContext = {
   validWordLength: number;
   message: string;
   definition: string;
-};
-
-export type UpdateLettersMessage = {
-  type: "updateLetters";
-  letters: string;
+  time: number;
 };
 
 export function gameMachine(socket: PartySocket) {
@@ -35,12 +31,21 @@ export function gameMachine(socket: PartySocket) {
                 callback(message);
               }
               if (message.type === "timeAndLettersReply") {
+                // callback(message)
                 console.log(
                   "Random letters: ",
                   message.letters,
                   "\nTime: ",
                   message.time
                 );
+                if (message.time >= 20) {
+                  callback({ type: "wait", time: message.time });
+                }
+                callback({
+                  type: "startGame",
+                  time: message.time,
+                  randomLetters: message.letters,
+                });
               }
             });
           },
@@ -67,8 +72,14 @@ export function gameMachine(socket: PartySocket) {
             animate: {
               actions: ["showNextFrame"],
             },
+            wait: { target: "waiting", actions: ["setTime"] },
+            startGame: {
+              actions: ["setupGame"],
+              target: "waiting",
+            },
           },
         },
+        waiting: {},
         dragAndDrop: {
           on: {
             letterDropped: {
@@ -86,6 +97,7 @@ export function gameMachine(socket: PartySocket) {
         validWordLength: 0,
         message: "Welcome to Pizzazz",
         definition: "—",
+        time: 40,
       },
       schema: {
         services: {
@@ -102,15 +114,23 @@ export function gameMachine(socket: PartySocket) {
             };
           },
         },
-        actions: {} as { type: "animate"; index: number },
+        actions: {} as
+          | { type: "animate"; index: number }
+          | { type: "updateLetters" }
+          | { type: "sendLettersToServer" }
+          | { type: "setTime" }
+          | { type: "showNextFrame" },
         context: {
           letters: "pizzazz" as string,
           validWordLength: 0 as number,
           message: "" as string,
           definition: "" as string,
+          time: 40 as number,
         },
         events: {} as
           | ServerMessage
+          | StartGameMessage
+          | WaitMessage
           | LetterDroppedEvent
           | { type: "animate"; index: number }
           | MouseEvent,
@@ -128,10 +148,17 @@ export function gameMachine(socket: PartySocket) {
         },
         showNextFrame: assign(showNextFrame),
         setValidLengthAndDef: assign(updateValidLengthAndDef),
+        setTime: assign(setTime),
+        setupGame: assign(setTimeAndLetters),
       },
     }
   );
 }
+
+export type UpdateLettersMessage = {
+  type: "updateLetters";
+  letters: string;
+};
 
 type LetterDroppedEvent = {
   type: "letterDropped";
@@ -143,6 +170,16 @@ type StartGameMessage = {
   type: "startGame";
   time: number;
   randomLetters: string;
+};
+
+type WaitMessage = {
+  type: "wait";
+  time: number;
+};
+
+type AnimateEvent = {
+  type: "animate";
+  index: number;
 };
 
 function updateLetters(context: GameMachineContext, event: LetterDroppedEvent) {
@@ -159,11 +196,6 @@ function updateLetters(context: GameMachineContext, event: LetterDroppedEvent) {
     letters,
   };
 }
-
-type AnimateEvent = {
-  type: "animate";
-  index: number;
-};
 
 function showNextFrame(context: GameMachineContext, event: AnimateEvent) {
   const abc = "abcdefghijklmnopqrstuvwxyz";
@@ -202,4 +234,15 @@ function updateValidLengthAndDef(
     validWordLength: event.length,
     definition: getDefinition(event),
   };
+}
+
+function setTime(context: GameMachineContext, event: WaitMessage) {
+  return { ...context, time: event.time };
+}
+
+function setTimeAndLetters(
+  context: GameMachineContext,
+  event: StartGameMessage
+) {
+  return { ...context, time: event.time, letters: event.randomLetters };
 }
