@@ -10,6 +10,7 @@ import { Message } from "./components/Messsage";
 import { ScreenNameInput } from "./components/ScreenNameInput";
 import { Definition } from "./components/Definitions";
 import { ScrabbleBoard } from "./components/ScrabbleBoard";
+import { ProgressBar } from "./components/ProgressBar";
 
 const letterIds = [
   "zeroth",
@@ -89,6 +90,7 @@ function App() {
         <Message />
         <LetterRow />
         {/* <ScrabbleBoard /> */}
+        <ProgressBar />
         <Definition />
         <ScreenNameInput />
       </main>
