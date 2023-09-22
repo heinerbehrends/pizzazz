@@ -26,10 +26,9 @@ const barStyles = css({
 export function ProgressBar() {
   const { gameService } = useContext(GlobalStateContext);
   const [state] = useActor(gameService);
-  console.log("time: ", state.context.time);
   const gameDuration = 40;
   const progressBarKeyframes = [
-    { width: `${100 - (state.context.time / gameDuration) * 100}%` },
+    { width: `${100 - ((state.context.time - 10) / gameDuration) * 100}%` },
     { width: "100%" },
   ];
   const progressBarTiming = {

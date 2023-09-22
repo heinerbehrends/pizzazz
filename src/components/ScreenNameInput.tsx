@@ -3,7 +3,7 @@ import { css } from "../../styled-system/css";
 import { GlobalStateContext } from "../state/contextProvider";
 import { useActor } from "@xstate/react";
 
-const inputStyles = {
+export const inputStyles = {
   display: "inline-block",
   verticalAlign: "middle",
   fontSize: "4vw",
@@ -62,6 +62,7 @@ const textInputStyles = css({
     color: "#7A828A",
   },
   _focus: {
+    ...inputStyles._focus,
     _placeholder: {
       color: "#AAB0B5",
     },
@@ -71,8 +72,15 @@ export function ScreenNameInput() {
   const [input, setInput] = useState("");
   const { socket, gameService } = useContext(GlobalStateContext);
   const [state] = useActor(gameService);
+
   const handleChange = ({ target: { value } }: ChangeEvent<HTMLInputElement>) =>
     setInput(value);
+
+  const newPlayerMessageJSON = JSON.stringify({
+    type: "newPlayer",
+    screenName: input,
+  });
+
   if (state.value === "onboarding") {
     return (
       <div className={formContainerStyles}>
@@ -84,12 +92,7 @@ export function ScreenNameInput() {
           onSubmit={(event: FormEvent<HTMLFormElement>) => {
             console.log("onSubmit");
             event.preventDefault();
-            socket.send(
-              JSON.stringify({
-                type: "newPlayer",
-                screenName: input,
-              })
-            );
+            socket.send(newPlayerMessageJSON);
           }}
         >
           <label className={hiddenLabelStyles} htmlFor="enter-screen-name">
