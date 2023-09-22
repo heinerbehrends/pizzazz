@@ -9,8 +9,8 @@ import {
 import { Message } from "./components/Messsage";
 import { ScreenNameInput } from "./components/ScreenNameInput";
 import { Definition } from "./components/Definitions";
-import { ScrabbleBoard } from "./components/ScrabbleBoard";
 import { ProgressBar } from "./components/ProgressBar";
+import { JoinButton, SolutionButton } from "./components/Buttons";
 
 const letterIds = [
   "zeroth",
@@ -26,6 +26,7 @@ const mainContainerStyles = css({
   maxWidth: "500px",
   marginX: "auto",
   paddingTop: "40dvh",
+  textAlign: "center",
 });
 
 const PizzazzBoardStyles = css({
@@ -89,9 +90,10 @@ function App() {
       <main className={mainContainerStyles}>
         <Message />
         <LetterRow />
-        {/* <ScrabbleBoard /> */}
         <ProgressBar />
         <Definition />
+        <JoinButton />
+        <SolutionButton />
         <ScreenNameInput />
       </main>
     </GlobalStateProvider>
