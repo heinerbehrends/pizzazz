@@ -1,5 +1,6 @@
 import { assign, createMachine } from "xstate";
 import { sendParent } from "xstate/lib/actions";
+import { StartNewGameMessage } from "../../server";
 
 export const entryAnimationMachine = createMachine(
   {
@@ -8,7 +9,10 @@ export const entryAnimationMachine = createMachine(
     initial: "running",
     states: {
       running: {
-        always: { target: "ended", cond: "isAnimationOver" },
+        always: {
+          cond: "isAnimationOver",
+          target: "paused",
+        },
         invoke: {
           id: "sendUpdateLetters",
           src: "sendUpdateLetters",
@@ -24,10 +28,14 @@ export const entryAnimationMachine = createMachine(
             actions: ["updateIndex"],
           },
         },
-        onDone: { target: "ended" },
       },
-      ended: {
-        type: "final",
+      paused: {
+        on: {
+          startNewGame: {
+            target: "running",
+            actions: ["resetIndex"],
+          },
+        },
       },
     },
     context: {
@@ -39,7 +47,8 @@ export const entryAnimationMachine = createMachine(
             type: "animate";
             index: number;
           }
-        | { type: "updateLetters" },
+        | { type: "updateLetters" }
+        | { type: "resetIndex" },
       services: {
         sendUpdateLetters: {} as {
           src: () => (callback: ({}) => {}) => void;
@@ -51,7 +60,8 @@ export const entryAnimationMachine = createMachine(
       },
       events: {} as
         | { type: "updateLetters" }
-        | { type: "sendAnimate"; index: number },
+        | { type: "sendAnimate"; index: number }
+        | StartNewGameMessage,
     },
     tsTypes: {} as import("./entryAnimationMachine.typegen").Typegen0,
     predictableActionArguments: true,
@@ -70,6 +80,7 @@ export const entryAnimationMachine = createMachine(
           index: context.index,
         };
       }),
+      resetIndex: assign(() => ({ index: 0 })),
     },
     services: {
       sendUpdateLetters: () => (callback) => {
@@ -85,3 +96,16 @@ export const entryAnimationMachine = createMachine(
     },
   }
 );
+
+// function showNextFrame(context: { index: number; letters: string }) {
+//   const staticPart = "pizzazz".substring(0, event.index);
+//   const randomPart = R.pipe(
+//     Array(7 - event.index).fill(null),
+//     R.map(getRandomAbc),
+//     (array) => array.join("")
+//   );
+//   return {
+//     ...context,
+//     letters: staticPart + randomPart,
+//   };
+// }
