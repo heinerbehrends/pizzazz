@@ -15,8 +15,15 @@ export type TimeAndLettersReply = {
   letters: string;
   time: number;
 };
+export type StartNewGameMessage = {
+  type: "startNewGame";
+  letters: string;
+};
 
-export type ServerMessage = validLengthAndDefMessage | TimeAndLettersReply;
+export type ServerMessage =
+  | validLengthAndDefMessage
+  | TimeAndLettersReply
+  | StartNewGameMessage;
 
 export type NewPlayerMessage = { type: "newPlayer"; name: string };
 
@@ -53,6 +60,12 @@ export default {
       console.log("serverServiceEvent: ", event);
       if (event.type === "timeAndLettersReply") {
         room.broadcast(JSON.stringify(event), toSender(room, connection));
+      }
+      if (event.type === "startNewGame") {
+        room.broadcast(JSON.stringify(event));
+      }
+      if (event.type === "solution") {
+        room.broadcast(JSON.stringify(event), [connection.id]);
       }
     });
 
