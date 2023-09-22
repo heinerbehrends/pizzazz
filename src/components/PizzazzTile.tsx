@@ -9,7 +9,7 @@ type PizzazzTileProps = {
   isValid: boolean;
 };
 
-const letterValues = {
+export const letterValues = {
   a: 1,
   b: 3,
   c: 3,
@@ -107,6 +107,7 @@ export function PizzazzTile({ letter, isValid, index }: PizzazzTileProps) {
         className={letterStyles}
         style={{
           backgroundColor: isValid ? "#C4F2CB" : "#F7E9B7",
+          color: letter === "8" ? "transparent" : undefined,
         }}
       >
         {letter.toUpperCase()}

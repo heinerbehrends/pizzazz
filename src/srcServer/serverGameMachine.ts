@@ -16,7 +16,10 @@ export function serverGameMachine() {
         playing: {
           on: {
             updateTime: [
-              { actions: "newRandomLetters", cond: "isTimeOver" },
+              {
+                actions: ["newRandomLetters", "startNewGame"],
+                cond: "isTimeOver",
+              },
               { actions: "updateTime" },
             ],
             newPlayer: {
@@ -26,7 +29,7 @@ export function serverGameMachine() {
         },
       },
       context: {
-        time: 20,
+        time: 50,
         randomLetters: generateRandomLetters(),
       },
       schema: {
@@ -42,7 +45,7 @@ export function serverGameMachine() {
           },
         },
         context: {
-          time: 20 as number,
+          time: 50 as number,
           randomLetters: "" as string,
         },
       },
@@ -77,6 +80,10 @@ export function serverGameMachine() {
           }
         ),
         newRandomLetters: assign(setRandomLetters),
+        startNewGame: sendParent((context) => ({
+          type: "startNewGame",
+          letters: context.randomLetters,
+        })),
       },
       guards: {
         isTimeOver: (context: ServerGameMachineContext) => context.time === -1,
