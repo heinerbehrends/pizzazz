@@ -1,6 +1,6 @@
 import { SolutionMessage, UpdateLettersMessage } from "./src/state/gameMachine";
 
-export type validLengthAndDefMessage = {
+export type ValidLengthAndDefMessage = {
   type: "validLengthAndDef";
   length: number;
   definition: string;
@@ -20,7 +20,7 @@ export type StartNewGameMessage = {
 export type NewPlayerMessage = { type: "newPlayer"; name: string };
 
 export type ServerToClientMessage =
-  | validLengthAndDefMessage
+  | ValidLengthAndDefMessage
   | TimeAndLettersReply
   | StartNewGameMessage
   | SolutionMessage;

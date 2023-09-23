@@ -11,6 +11,7 @@ import { ScreenNameInput } from "./components/ScreenNameInput";
 import { Definition } from "./components/Definitions";
 import { ProgressBar } from "./components/ProgressBar";
 import { JoinButton, SolutionButton } from "./components/Buttons";
+import { State } from "xstate";
 
 const letterIds = [
   "zeroth",
@@ -52,11 +53,17 @@ const containerStyles = css({
   md: { marginTop: "3rem", marginBottom: "1.5rem" },
 });
 
+function useLogState(gameState: State<any, any, any, any, any>) {
+  useEffect(() => {
+    console.log(gameState.value);
+  }, [gameState.value]);
+}
+
 export function LetterRow() {
   const { gameService } = useContext(GlobalStateContext);
   const [gameState] = useActor(gameService);
   const [, sendDnD] = useActor(gameState.children.dragAndDropMachine);
-
+  useLogState(gameState);
   useEffect(() => {
     const body = document.body;
     body.addEventListener("mouseup", sendDnD);
