@@ -3,13 +3,14 @@ import { entryAnimationMachine } from "./entryAnimationMachine";
 import { dragAndDropMachine } from "./dragAndDropMachine";
 import { swapLetters } from "./dragAndDropLogic";
 import PartySocket from "partysocket";
-import {
-  ServerMessage,
-  StartNewGameMessage,
-  validLengthAndDefMessage,
-} from "../../server";
 import * as R from "remeda";
 import { forwardTo } from "xstate/lib/actions";
+import {
+  ServerToClientMessage,
+  StartNewGameMessage,
+  TimeAndLettersReply,
+  ValidLengthAndDefMessage,
+} from "../../server.types";
 
 export type GameMachineContext = {
   letters: string;
@@ -30,30 +31,7 @@ export function gameMachine(socket: PartySocket) {
       invoke: [
         {
           id: "socket",
-          // src: (context, event) => (callback, onEvent) => {
-          src: () => (callback) => {
-            socket.addEventListener("message", (event) => {
-              const message = JSON.parse(event.data) as ServerMessage;
-              console.log(message);
-              if (message.type === "validLengthAndDef") {
-                callback(message);
-              }
-              if (message.type === "timeAndLettersReply") {
-                // callback(message)
-                if (message.time >= 20) {
-                  callback({ type: "wait", time: message.time });
-                }
-                callback({
-                  type: "startGame",
-                  time: message.time,
-                  randomLetters: message.letters,
-                });
-              }
-              if (message.type === "startNewGame") {
-                callback(message);
-              }
-            });
-          },
+          src: "socketCallback",
         },
         {
           id: "dragAndDropMachine",
@@ -79,7 +57,19 @@ export function gameMachine(socket: PartySocket) {
             animate: {
               actions: ["showNextFrame"],
             },
-            wait: { target: "waiting", actions: ["setTime"] },
+            timeAndLettersReply: [
+              {
+                target: "waiting",
+                cond: "isLittleTimeLeft",
+                actions: ["setTime"],
+              },
+              {
+                target: "dragAndDrop",
+                actions: ["setupGame"],
+                cond: "isEnoughTimeLeft",
+              },
+            ],
+            // wait: { target: "waiting", actions: ["setTime"] },
           },
         },
         waiting: {
@@ -146,26 +136,27 @@ export function gameMachine(socket: PartySocket) {
           | { type: "updateLetters" }
           | { type: "sendLettersToServer" }
           | { type: "setTime" }
-          | { type: "showNextFrame" },
+          | { type: "showNextFrame" }
+          | { type: "sendToServer" },
         context: {
           letters: "pizzazz" as string,
           lettersStatic: "pizzazz" as string,
           validWordLength: 0 as number,
           message: "" as string,
           definition: "" as string,
-          time: 40 as number,
+          time: 50 as number,
           name: "" as string,
         },
         events: {} as
-          | ServerMessage
+          | ServerToClientMessage
           | StartGameMessage
           | WaitMessage
           | LetterDroppedEvent
           | { type: "animate"; index: number }
           | MouseEvent
           | JoinGameEvent
-          | StartNewGameMessage
-          | SolutionMessage,
+          | SolutionMessage
+          | ServerToClientMessage,
       },
       tsTypes: {} as import("./gameMachine.typegen").Typegen0,
       predictableActionArguments: true,
@@ -173,6 +164,9 @@ export function gameMachine(socket: PartySocket) {
     {
       actions: {
         updateLetters: assign(updateLetters),
+        // sendToServer: (_, event) => {
+        //   socket.send(JSON.stringify(event));
+        // },
         sendLettersToServer: (context) => {
           socket.send(
             JSON.stringify({ type: "updateLetters", letters: context.letters })
@@ -190,6 +184,29 @@ export function gameMachine(socket: PartySocket) {
               solution: context.letters.substring(0, context.validWordLength),
             })
           );
+        },
+      },
+      guards: {
+        isLittleTimeLeft: (_, event: TimeAndLettersReply) => event.time >= 20,
+        isEnoughTimeLeft: (_, event: TimeAndLettersReply) => event.time < 20,
+      },
+      services: {
+        socketCallback: () => (callback) => {
+          socket.addEventListener("message", (event) => {
+            callback(JSON.parse(event.data));
+            if (
+              (
+                [
+                  "validLengthAndDef",
+                  "solution",
+                  "startNewGame",
+                  "timeAndLettersReply",
+                ] as Array<ServerToClientMessage["type"]>
+              ).includes(event.type as ServerToClientMessage["type"])
+            ) {
+              console.log("event data", JSON.stringify(event.data));
+            }
+          });
         },
       },
     }
@@ -234,9 +251,9 @@ function showNextFrame(context: GameMachineContext, event: AnimateEvent) {
 
 function updateValidLengthAndDef(
   context: GameMachineContext,
-  event: validLengthAndDefMessage
+  event: ValidLengthAndDefMessage
 ) {
-  function getDefinition(event: validLengthAndDefMessage) {
+  function getDefinition(event: ValidLengthAndDefMessage) {
     const isValid = event.length > 0;
     if (event.definition) {
       return event.definition;
@@ -271,7 +288,7 @@ function setTimeAndLetters(
 
 function setupNewGame(
   context: GameMachineContext,
-  event: StartNewGameMessage
+  event: StartNewGameMessage | TimeAndLettersReply
 ): GameMachineContext {
   console.log("Hello from setupNewGame: ", event);
   return {
@@ -313,7 +330,7 @@ type JoinGameEvent = {
   type: "joinGame";
 };
 
-type SolutionMessage = {
+export type SolutionMessage = {
   type: "solution";
   solution: string;
 };
