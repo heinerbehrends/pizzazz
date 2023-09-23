@@ -1,6 +1,6 @@
 import { assign, createMachine } from "xstate";
 import { sendParent } from "xstate/lib/actions";
-import { StartNewGameMessage } from "../../server";
+import { StartNewGameMessage } from "../../server.types";
 
 export const entryAnimationMachine = createMachine(
   {

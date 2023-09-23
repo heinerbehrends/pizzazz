@@ -20,7 +20,6 @@ export function GlobalStateProvider({
     room: "pizzazz-room",
   });
   const gameService = useInterpret(gameMachine(socket));
-
   return (
     <GlobalStateContext.Provider value={{ gameService, socket }}>
       {children}

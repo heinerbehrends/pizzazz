@@ -26,26 +26,30 @@ const barStyles = css({
 export function ProgressBar() {
   const { gameService } = useContext(GlobalStateContext);
   const [state] = useActor(gameService);
-  const gameDuration = 40;
-  const progressBarKeyframes = [
-    { width: `${100 - ((state.context.time - 10) / gameDuration) * 100}%` },
-    { width: "100%" },
-  ];
-  const progressBarTiming = {
-    duration: state.context.time * 1000,
-  };
+  const gameDuration = 50;
   const progressBarRef = useRef(null);
 
   useEffect(() => {
     if (progressBarRef.current === null) {
       return;
     }
+    const progressBarKeyframes = [
+      { width: `${100 - (state.context.time / gameDuration) * 100}%` },
+      { width: "100%" },
+    ];
+    const progressBarTiming = {
+      duration: state.context.time * 1000,
+    };
     const progressBarDOM = progressBarRef.current as HTMLDivElement;
     progressBarDOM.animate(progressBarKeyframes, progressBarTiming);
   }, [state.context.time]);
-  return (
-    <div className={containerStyles}>
-      <div ref={progressBarRef} className={barStyles} />
-    </div>
-  );
+
+  if (state.value === "dragAndDrop") {
+    return (
+      <div className={containerStyles}>
+        <div ref={progressBarRef} className={barStyles} />
+      </div>
+    );
+  }
+  return null;
 }
