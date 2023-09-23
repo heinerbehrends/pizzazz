@@ -1,7 +1,10 @@
 import { assign, createMachine } from "xstate";
-import { NewPlayerMessage, ServerMessage } from "../../server";
+import { NewPlayerMessage, ServerToClientMessage } from "../../server.types";
 import { sendParent } from "xstate/lib/actions";
 import { generateRandomLetters } from "./generateRandomLetters";
+import { UpdateLettersMessage } from "../state/gameMachine";
+import { getValidWordLength } from "./findValidWords";
+import dictionary from "./dictionary.json";
 
 export function serverGameMachine() {
   return createMachine(
@@ -14,16 +17,23 @@ export function serverGameMachine() {
       },
       states: {
         playing: {
+          after: {
+            1000: {
+              actions: ["updateTime"],
+              target: "playing",
+            },
+          },
+          always: {
+            actions: ["newRandomLetters", "startNewGame"],
+            cond: "isTimeOver",
+          },
+
           on: {
-            updateTime: [
-              {
-                actions: ["newRandomLetters", "startNewGame"],
-                cond: "isTimeOver",
-              },
-              { actions: "updateTime" },
-            ],
             newPlayer: {
               actions: ["sendTimeAndRandomLetters"],
+            },
+            updateLetters: {
+              actions: ["sendValidLengthAndDef"],
             },
           },
         },
@@ -33,17 +43,15 @@ export function serverGameMachine() {
         randomLetters: generateRandomLetters(),
       },
       schema: {
-        events: {} as { type: "updateTime" } | NewPlayerMessage,
+        events: {} as
+          | { type: "updateTime" }
+          | NewPlayerMessage
+          | UpdateLettersMessage,
         actions: {} as
           | { type: "updateTime" }
           | { type: "sendTimeAndRandomLetters" }
-          | { type: "newRandomLetters" },
-        services: {
-          updateTimeInterval: {} as {
-            src: () => (callback: ({}) => {}) => void;
-            data: null;
-          },
-        },
+          | { type: "newRandomLetters" }
+          | { type: "validLengthAndDef" },
         context: {
           time: 50 as number,
           randomLetters: "" as string,
@@ -53,16 +61,6 @@ export function serverGameMachine() {
       tsTypes: {} as import("./serverGameMachine.typegen").Typegen0,
     },
     {
-      services: {
-        updateTimeInterval: () => (callback) => {
-          const intervalId = setInterval(() => {
-            callback({ type: "updateTime" });
-          }, 1000);
-          return () => {
-            clearInterval(intervalId);
-          };
-        },
-      },
       actions: {
         updateTime: assign((context) => {
           return {
@@ -76,9 +74,17 @@ export function serverGameMachine() {
               type: "timeAndLettersReply",
               time: context.time,
               letters: context.randomLetters,
-            } as ServerMessage;
+            } as ServerToClientMessage;
           }
         ),
+        sendValidLengthAndDef: sendParent((_, event) => {
+          const validWordLength = getValidWordLength(event.letters);
+          return {
+            type: "validLengthAndDef",
+            length: validWordLength,
+            definition: retrieveDefinition(event.letters, validWordLength),
+          };
+        }),
         newRandomLetters: assign(setRandomLetters),
         startNewGame: sendParent((context) => ({
           type: "startNewGame",
@@ -96,4 +102,16 @@ type ServerGameMachineContext = { time: number; randomLetters: string };
 
 function setRandomLetters(context: ServerGameMachineContext) {
   return { ...context, time: 50, randomLetters: generateRandomLetters() };
+}
+function retrieveDefinition(letters: string, validWordLength: number) {
+  if (validWordLength > 0) {
+    return (
+      dictionary?.[
+        letters
+          .substring(0, validWordLength)
+          .toUpperCase() as keyof typeof dictionary
+      ] || null
+    );
+  }
+  return null;
 }
