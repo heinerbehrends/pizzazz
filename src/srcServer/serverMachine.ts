@@ -1,14 +1,7 @@
-import { createMachine, forwardTo } from "xstate";
+import { createMachine } from "xstate";
 import { serverGameMachine } from "./serverGameMachine";
-import { NewPlayerMessage, TimeAndLettersReply } from "../../server";
-
-// function receiveMessageFromChild(event, context) {
-//   return (callback, onEvent) => {
-//     onEvent((event) =>
-//       console.log("event in receiveMessageFromChild: ", event)
-//     );
-//   };
-// }
+import { NewPlayerMessage, TimeAndLettersReply } from "../../server.types";
+import { UpdateLettersMessage } from "../state/gameMachine";
 
 export function serverMachine() {
   return createMachine({
@@ -28,20 +21,13 @@ export function serverMachine() {
           {
             id: "serverGameMachine",
             src: serverGameMachine,
+            autoForward: true,
           },
-          // {
-          //   id: "receiveMessageFromChild",
-          //   src: receiveMessageFromChild,
-          // },
         ],
         on: {
           lastUserDisconnected: {
             target: "idle",
           },
-          newPlayer: {
-            actions: forwardTo("serverGameMachine"),
-          },
-          timeAndLettersReply: {},
         },
       },
     },
@@ -51,7 +37,8 @@ export function serverMachine() {
         | { type: "userConnected" }
         | { type: "lastUserDisconnected" }
         | NewPlayerMessage
-        | TimeAndLettersReply,
+        | TimeAndLettersReply
+        | UpdateLettersMessage,
     },
     tsTypes: {} as import("./serverMachine.typegen").Typegen0,
     predictableActionArguments: true,
