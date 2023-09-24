@@ -12,6 +12,8 @@ type ButtonProps = {
   value: string;
 };
 
+export type ScreenNameMessage = { type: "screenName"; name: string };
+
 function Button({ clickHandler, value }: ButtonProps) {
   return (
     <input
@@ -19,6 +21,7 @@ function Button({ clickHandler, value }: ButtonProps) {
       className={buttonStyles}
       onClick={clickHandler}
       value={value}
+      autoFocus
     />
   );
 }
@@ -27,7 +30,7 @@ export function JoinButton() {
   const { gameService } = useContext(GlobalStateContext);
   const [state, send] = useActor(gameService);
 
-  if (state.context.time > 20 && state.value === "waiting") {
+  if (state.context.time > 10 && state.value === "waiting") {
     return (
       <Button
         clickHandler={() => send({ type: "joinGame" })}
@@ -46,11 +49,12 @@ export function SolutionButton() {
     state.context.validWordLength
   );
   const potentialScore = getWordScore(solution);
-  const text = `Play ${solution.toUpperCase()} for ${potentialScore} points`;
+  const buttonMessage = `Play ${solution.toUpperCase()} for ${potentialScore} points`;
+  function handleClick() {
+    console.log("send solution");
+    send({ type: "solution", solution, score: potentialScore });
+  }
   return state.context.validWordLength > 0 ? (
-    <Button
-      clickHandler={() => send({ type: "solution", solution })}
-      value={text}
-    />
+    <Button clickHandler={handleClick} value={buttonMessage} />
   ) : null;
 }

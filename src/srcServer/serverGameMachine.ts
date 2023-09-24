@@ -1,20 +1,27 @@
 import { assign, createMachine } from "xstate";
-import { NewPlayerMessage, ServerToClientMessage } from "../../server.types";
+import {
+  PlayerSolutionMessage,
+  StartNewGameMessage,
+  TimeAndLettersReply,
+  UserDisconnectedEvent,
+  ValidLengthAndDefMessage,
+} from "../../server.types";
 import { sendParent } from "xstate/lib/actions";
 import { generateRandomLetters } from "./generateRandomLetters";
-import { UpdateLettersMessage } from "../state/gameMachine";
-import { getValidWordLength } from "./findValidWords";
+import { SolutionMessage, UpdateLettersMessage } from "../state/gameMachine";
+import { findValidWords, getValidWordLength } from "./findValidWords";
 import dictionary from "./dictionary.json";
+import dictWithSortedKeys from "./associative.json";
+import { withConnectionId } from "./serverMachine";
+import { ScreenNameMessage } from "../components/Buttons";
+
+export const gameDuration = 50;
 
 export function serverGameMachine() {
   return createMachine(
     {
       id: "serverGameMachine",
       initial: "playing",
-      invoke: {
-        id: "updateTimeInterval",
-        src: "updateTimeInterval",
-      },
       states: {
         playing: {
           after: {
@@ -24,37 +31,53 @@ export function serverGameMachine() {
             },
           },
           always: {
-            actions: ["newRandomLetters", "startNewGame"],
+            actions: ["newRandomLetters", "reactToClient"],
             cond: "isTimeOver",
           },
 
           on: {
             newPlayer: {
-              actions: ["sendTimeAndRandomLetters"],
+              actions: ["saveId"],
+            },
+            screenName: {
+              actions: ["reactToClient", "saveNameAndId"],
+            },
+            userDisconnected: {
+              actions: ["removeNameAndId"],
             },
             updateLetters: {
-              actions: ["sendValidLengthAndDef"],
+              actions: ["reactToClient"],
+            },
+            solution: {
+              actions: ["reactToClient"],
             },
           },
         },
       },
       context: {
-        time: 50,
+        time: gameDuration,
         randomLetters: generateRandomLetters(),
+        players: {},
       },
       schema: {
         events: {} as
           | { type: "updateTime" }
-          | NewPlayerMessage
-          | UpdateLettersMessage,
+          | withConnectionId<{ type: "newPlayer" }>
+          | UserDisconnectedEvent
+          | withConnectionId<ScreenNameMessage>
+          | withConnectionId<UpdateLettersMessage>
+          | withConnectionId<SolutionMessage>,
         actions: {} as
           | { type: "updateTime" }
-          | { type: "sendTimeAndRandomLetters" }
           | { type: "newRandomLetters" }
-          | { type: "validLengthAndDef" },
+          | { type: "reactToClient" }
+          | { type: "removeNameAndId" }
+          | { type: "saveNameAndId" }
+          | { type: "saveId" },
         context: {
           time: 50 as number,
           randomLetters: "" as string,
+          players: {} as Record<string, string>,
         },
       },
       predictableActionArguments: true,
@@ -62,34 +85,12 @@ export function serverGameMachine() {
     },
     {
       actions: {
-        updateTime: assign((context) => {
-          return {
-            ...context,
-            time: context.time - 1,
-          };
-        }),
-        sendTimeAndRandomLetters: sendParent(
-          (context: ServerGameMachineContext) => {
-            return {
-              type: "timeAndLettersReply",
-              time: context.time,
-              letters: context.randomLetters,
-            } as ServerToClientMessage;
-          }
-        ),
-        sendValidLengthAndDef: sendParent((_, event) => {
-          const validWordLength = getValidWordLength(event.letters);
-          return {
-            type: "validLengthAndDef",
-            length: validWordLength,
-            definition: retrieveDefinition(event.letters, validWordLength),
-          };
-        }),
         newRandomLetters: assign(setRandomLetters),
-        startNewGame: sendParent((context) => ({
-          type: "startNewGame",
-          letters: context.randomLetters,
-        })),
+        updateTime: assign(countdownTime),
+        saveId: assign(saveId),
+        saveNameAndId: assign(saveNameAndId),
+        removeNameAndId: assign(removeNameAndId),
+        reactToClient: sendParent(reactToClient),
       },
       guards: {
         isTimeOver: (context: ServerGameMachineContext) => context.time === -1,
@@ -98,11 +99,116 @@ export function serverGameMachine() {
   );
 }
 
-type ServerGameMachineContext = { time: number; randomLetters: string };
+type SendToParentEvent =
+  | withConnectionId<ScreenNameMessage>
+  | withConnectionId<UpdateLettersMessage>
+  | withConnectionId<SolutionMessage>
+  | {
+      type: "";
+    };
+
+function reactToClient(
+  context: ServerGameMachineContext,
+  event: SendToParentEvent
+) {
+  switch (event.type) {
+    case "screenName":
+      return {
+        type: "timeAndLettersReply",
+        time: context.time,
+        letters: context.randomLetters,
+        excludePlayers: Object.keys(context.players).filter(
+          (id) => id !== event.connectionId
+        ),
+      } as TimeAndLettersReply;
+
+    case "updateLetters":
+      const validWordLength = getValidWordLength(event.letters);
+      return {
+        type: "validLengthAndDef",
+        length: validWordLength,
+        definition: retrieveDefinition(event.letters, validWordLength),
+        excludePlayers: Object.keys(context.players).filter(
+          (id) => id !== event.connectionId
+        ),
+      } as ValidLengthAndDefMessage;
+
+    case "solution":
+      console.log(context.players);
+      return {
+        type: "playerSolution",
+        name: context.players[event.connectionId],
+        length: event.solution.length,
+        score: event.score,
+        excludePlayers: [event.connectionId],
+      } as PlayerSolutionMessage;
+
+    case "":
+      const validWords = findValidWords(
+        context.randomLetters,
+        dictWithSortedKeys
+      );
+      return {
+        type: "startNewGame",
+        letters: context.randomLetters,
+        time: context.time,
+        validWords,
+      } as StartNewGameMessage;
+  }
+}
+
+type ServerGameMachineContext = {
+  time: number;
+  randomLetters: string;
+  players: Record<string, string>;
+};
 
 function setRandomLetters(context: ServerGameMachineContext) {
-  return { ...context, time: 50, randomLetters: generateRandomLetters() };
+  return {
+    ...context,
+    time: gameDuration,
+    randomLetters: generateRandomLetters(),
+  };
 }
+
+function countdownTime(context: ServerGameMachineContext) {
+  return {
+    ...context,
+    time: context.time - 1,
+  };
+}
+
+function saveNameAndId(
+  context: ServerGameMachineContext,
+  event: withConnectionId<ScreenNameMessage>
+) {
+  return {
+    ...context,
+    players: { ...context.players, [event.connectionId]: event.name },
+  };
+}
+function saveId(
+  context: ServerGameMachineContext,
+  event: withConnectionId<{ type: "newPlayer" }>
+) {
+  return {
+    ...context,
+    players: { ...context.players, [event.connectionId]: "" },
+  };
+}
+
+function removeNameAndId(
+  context: ServerGameMachineContext,
+  event: UserDisconnectedEvent
+) {
+  const { [event.connectionId]: removedName, ...newPlayers } = context.players;
+  console.log(newPlayers);
+  return {
+    ...context,
+    players: newPlayers,
+  };
+}
+
 function retrieveDefinition(letters: string, validWordLength: number) {
   if (validWordLength > 0) {
     return (

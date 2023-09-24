@@ -6,11 +6,14 @@ import PartySocket from "partysocket";
 import * as R from "remeda";
 import { forwardTo } from "xstate/lib/actions";
 import {
+  PlayerSolutionMessage,
   ServerToClientMessage,
   StartNewGameMessage,
   TimeAndLettersReply,
   ValidLengthAndDefMessage,
 } from "../../server.types";
+import { gameDuration } from "../srcServer/serverGameMachine";
+import { ScreenNameMessage } from "../components/Buttons";
 
 export type GameMachineContext = {
   letters: string;
@@ -60,8 +63,8 @@ export function gameMachine(socket: PartySocket) {
             timeAndLettersReply: [
               {
                 target: "waiting",
+                actions: ["setupWaitingGame"],
                 cond: "isLittleTimeLeft",
-                actions: ["setTime"],
               },
               {
                 target: "dragAndDrop",
@@ -69,13 +72,18 @@ export function gameMachine(socket: PartySocket) {
                 cond: "isEnoughTimeLeft",
               },
             ],
-            // wait: { target: "waiting", actions: ["setTime"] },
           },
         },
         waiting: {
+          after: {
+            1000: {
+              target: "waiting",
+              actions: ["countdown"],
+            },
+          },
           on: {
-            joinGame: { target: "dragAndDrop" },
-            startGame: {
+            joinGame: { target: "dragAndDrop", actions: ["setupJoinGame"] },
+            startNewGame: {
               actions: ["setupGame"],
               target: "dragAndDrop",
             },
@@ -100,8 +108,11 @@ export function gameMachine(socket: PartySocket) {
             startNewGame: {
               actions: ["setupNewGame", forwardTo("entryAnimationMachine")],
             },
-            sendSolution: {
-              actions: ["sendSolutionToServer"],
+            solution: {
+              actions: ["sendToServer"],
+            },
+            playerSolution: {
+              actions: ["displaySolution"],
             },
           },
         },
@@ -112,7 +123,7 @@ export function gameMachine(socket: PartySocket) {
         validWordLength: 0,
         message: "Welcome to Pizzazz",
         definition: "a micro-scrabble word game",
-        time: 0,
+        time: gameDuration,
         name: "",
       },
       schema: {
@@ -137,7 +148,12 @@ export function gameMachine(socket: PartySocket) {
           | { type: "sendLettersToServer" }
           | { type: "setTime" }
           | { type: "showNextFrame" }
-          | { type: "sendToServer" },
+          | { type: "sendToServer" }
+          | { type: "countdown" }
+          | { type: "setupJoinGame" }
+          | { type: "setupWaitingGame" }
+          | { type: "displaySolution" },
+
         context: {
           letters: "pizzazz" as string,
           lettersStatic: "pizzazz" as string,
@@ -149,63 +165,47 @@ export function gameMachine(socket: PartySocket) {
         },
         events: {} as
           | ServerToClientMessage
+          | ClientToServerMessage
           | StartGameMessage
           | WaitMessage
           | LetterDroppedEvent
           | { type: "animate"; index: number }
           | MouseEvent
-          | JoinGameEvent
-          | SolutionMessage
-          | ServerToClientMessage,
+          | JoinGameEvent,
       },
       tsTypes: {} as import("./gameMachine.typegen").Typegen0,
       predictableActionArguments: true,
     },
     {
       actions: {
-        updateLetters: assign(updateLetters),
-        // sendToServer: (_, event) => {
-        //   socket.send(JSON.stringify(event));
-        // },
+        sendToServer: (_, event) => {
+          socket.send(JSON.stringify(event));
+        },
         sendLettersToServer: (context) => {
           socket.send(
             JSON.stringify({ type: "updateLetters", letters: context.letters })
           );
         },
+        countdown: assign(countdownUpdateTime),
+        updateLetters: assign(updateLetters),
         showNextFrame: assign(showNextFrame),
         setValidLengthAndDef: assign(updateValidLengthAndDef),
-        setTime: assign(setTime),
         setupGame: assign(setTimeAndLetters),
         setupNewGame: assign(setupNewGame),
-        sendSolutionToServer: (context) => {
-          socket.send(
-            JSON.stringify({
-              type: "solution",
-              solution: context.letters.substring(0, context.validWordLength),
-            })
-          );
-        },
+        setupJoinGame: assign(setupJoinGame),
+        setupWaitingGame: assign(setupWaitingGame),
+        displaySolution: assign(displaySolution),
       },
       guards: {
-        isLittleTimeLeft: (_, event: TimeAndLettersReply) => event.time >= 20,
-        isEnoughTimeLeft: (_, event: TimeAndLettersReply) => event.time < 20,
+        isLittleTimeLeft: (_, event: TimeAndLettersReply) => event.time > 0,
+        isEnoughTimeLeft: (_, event: TimeAndLettersReply) => event.time > 20,
       },
       services: {
+        // subscribe to messages from the
         socketCallback: () => (callback) => {
           socket.addEventListener("message", (event) => {
+            console.log("message from server: ", event.data);
             callback(JSON.parse(event.data));
-            if (
-              (
-                [
-                  "validLengthAndDef",
-                  "solution",
-                  "startNewGame",
-                  "timeAndLettersReply",
-                ] as Array<ServerToClientMessage["type"]>
-              ).includes(event.type as ServerToClientMessage["type"])
-            ) {
-              console.log("event data", JSON.stringify(event.data));
-            }
           });
         },
       },
@@ -270,19 +270,29 @@ function updateValidLengthAndDef(
   };
 }
 
-function setTime(context: GameMachineContext, event: WaitMessage) {
-  return { ...context, time: event.time };
-}
-
 function setTimeAndLetters(
   context: GameMachineContext,
   event: StartGameMessage
 ): GameMachineContext {
+  console.log("setTimeAndLetters event: ", event);
   return {
     ...context,
     time: event.time,
-    letters: event.randomLetters,
-    lettersStatic: event.randomLetters,
+    lettersStatic: event.letters,
+  };
+}
+
+function setupWaitingGame(
+  context: GameMachineContext,
+  event: StartNewGameMessage | TimeAndLettersReply
+): GameMachineContext {
+  console.log("Hello from setupNewGame: ", event);
+  return {
+    ...context,
+    message: `A new game will start in ${event.time} seconds`,
+    validWordLength: 0,
+    lettersStatic: event.letters,
+    time: event.time,
   };
 }
 
@@ -293,12 +303,44 @@ function setupNewGame(
   console.log("Hello from setupNewGame: ", event);
   return {
     ...context,
+    message: `Move the letters to find valid words`,
     validWordLength: 0,
     letters: event.letters,
     lettersStatic: event.letters,
-    time: 50,
+    time: gameDuration,
   };
 }
+function setupJoinGame(
+  context: GameMachineContext,
+  event: StartNewGameMessage | TimeAndLettersReply
+): GameMachineContext {
+  console.log("Hello from setupNewGame: ", event);
+  return {
+    ...context,
+    message: "Move the letters to find valid words",
+    validWordLength: 0,
+    time: context.time,
+  };
+}
+
+function countdownUpdateTime(context: GameMachineContext) {
+  return {
+    ...context,
+    time: context.time - 1,
+    message: `A new game will start in ${context.time - 1} seconds`,
+  };
+}
+
+function displaySolution(
+  context: GameMachineContext,
+  event: PlayerSolutionMessage
+) {
+  return {
+    ...context,
+    message: `${event.name} played a ${event.length}-letter-word for ${event.score} points`,
+  };
+}
+
 export type UpdateLettersMessage = {
   type: "updateLetters";
   letters: string;
@@ -313,7 +355,7 @@ type LetterDroppedEvent = {
 type StartGameMessage = {
   type: "startGame";
   time: number;
-  randomLetters: string;
+  letters: string;
 };
 
 type WaitMessage = {
@@ -333,4 +375,10 @@ type JoinGameEvent = {
 export type SolutionMessage = {
   type: "solution";
   solution: string;
+  score: number;
 };
+
+export type ClientToServerMessage =
+  | UpdateLettersMessage
+  | ScreenNameMessage
+  | SolutionMessage;

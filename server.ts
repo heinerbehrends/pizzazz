@@ -1,44 +1,51 @@
 import type { Party, PartyConnection, PartyKitServer } from "partykit/server";
 import { interpret } from "xstate";
 import { serverMachine } from "./src/srcServer/serverMachine";
-import { ClientToServerMessage, ServerToClientMessage } from "./server.types";
+import { ServerToClientMessage, UserDisconnectedEvent } from "./server.types";
+import { ClientToServerMessage } from "./src/state/gameMachine";
 
 const serverService = interpret(serverMachine()).start();
 
 export default {
   async onConnect(connection, room) {
+    console.log("onConnect room", room);
+    const connectionId = connection.id;
+    serverService.send({ type: "newPlayer", connectionId });
     handleIdleConnected({
       serverService,
       connection,
       room,
     });
+    // listen for client messages
     connection.addEventListener("message", (event) => {
       if (typeof event.data !== "string") {
         return;
       }
       const message: ClientToServerMessage = JSON.parse(event.data);
-      console.log("clientToServerMessage: ", message);
-      serverService.send(message);
+      console.log("clientToServerMessage: ", message.type);
+      serverService.send({ ...message, connectionId });
     });
-    serverService.onEvent((event) => {
-      if (
-        [
-          "timeAndLettersReply",
-          "validLengthAndDef",
-          "solution",
-          "startNewGame",
-        ].includes(event.type)
-      ) {
-        console.log("serverToClientMessage", event);
+    // listen for client messages
+    // send machine events to the client
+    serverService.onEvent((evt) => {
+      console.log("serverToClientMessage", evt.type);
+      if (evt.type === "solution") {
+        return;
       }
-      sendToClient({
-        toSender: ["timeAndLettersReply", "validLengthAndDef"],
-        toEveryoneElse: ["solution"],
-        toEveryone: ["startNewGame"],
-        event: event as ServerToClientMessage,
-        connection,
-        room,
-      });
+      const event = evt as ServerToClientMessage;
+      room.broadcast(JSON.stringify(event), event?.excludePlayers);
+      // if (event.type === "timeAndLettersReply") {
+      //   console.log("timeAndLettersReply", event.excludePlayers);
+      //   return;
+      // }
+      // sendToClient({
+      //   toSender: ["validLengthAndDef"],
+      //   toEveryoneElse: ["playerSolution"],
+      //   toEveryone: ["startNewGame"],
+      //   event: event as ServerToClientMessage,
+      //   connection,
+      //   room,
+      // });
     });
   },
 } satisfies PartyKitServer;
@@ -69,12 +76,15 @@ function sendToClient({
   room,
 }: SendToClientArgs) {
   if (toEveryone?.includes(event.type)) {
+    console.log("to everyone");
     room.broadcast(JSON.stringify(event));
   }
   if (toSender?.includes(event.type)) {
+    console.log("to sender");
     room.broadcast(JSON.stringify(event), reply(room, connection));
   }
   if (toEveryoneElse?.includes(event.type)) {
+    console.log("to everyone else", connection.id);
     room.broadcast(JSON.stringify(event), [connection.id]);
   }
 }
@@ -94,8 +104,13 @@ function handleIdleConnected({
     serverService.send({ type: "userConnected" });
   }
   connection.addEventListener("close", () => {
+    console.log("onClose");
     if ([...room.getConnections()].length === 0) {
       serverService.send("lastUserDisconnected");
     }
+    serverService.send({
+      type: "userDisconnected",
+      connectionId: connection.id,
+    } as UserDisconnectedEvent);
   });
 }

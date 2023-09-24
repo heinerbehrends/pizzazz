@@ -2,6 +2,7 @@ import { ChangeEvent, FormEvent, useContext, useState } from "react";
 import { css } from "../../styled-system/css";
 import { GlobalStateContext } from "../state/contextProvider";
 import { useActor } from "@xstate/react";
+import { ScreenNameMessage } from "./Buttons";
 
 export const inputStyles = {
   display: "inline-block",
@@ -77,9 +78,9 @@ export function ScreenNameInput() {
     setInput(value);
 
   const newPlayerMessageJSON = JSON.stringify({
-    type: "newPlayer",
-    screenName: input,
-  });
+    type: "screenName",
+    name: input,
+  } as ScreenNameMessage);
 
   if (state.value === "onboarding") {
     return (
