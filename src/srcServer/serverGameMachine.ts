@@ -1,8 +1,12 @@
 import { assign, createMachine } from "xstate";
-import { UserDisconnectedEvent } from "../../server.types";
+import {
+  ClientToServerMessageWithId,
+  ServerGameMachineContext,
+  UserDisconnectedEvent,
+  WithConnectionId,
+} from "../../server.types";
 import { sendParent } from "xstate/lib/actions";
 import { generateRandomLetters } from "./generateRandomLetters";
-import { ClientToServerMessageWithId, withConnectionId } from "./serverMachine";
 import {
   countdownTime,
   reactToClient,
@@ -59,7 +63,7 @@ export function serverGameMachine() {
       schema: {
         events: {} as
           | { type: "updateTime" }
-          | withConnectionId<{ type: "newPlayer" }>
+          | WithConnectionId<{ type: "newPlayer" }>
           | UserDisconnectedEvent
           | ClientToServerMessageWithId,
         actions: {} as
@@ -93,15 +97,3 @@ export function serverGameMachine() {
     }
   );
 }
-
-export type SendToParentEvent =
-  | ClientToServerMessageWithId
-  | {
-      type: "";
-    };
-
-export type ServerGameMachineContext = {
-  time: number;
-  randomLetters: string;
-  players: Record<string, string>;
-};

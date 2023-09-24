@@ -1,3 +1,5 @@
+import { ClientToServerMessage } from "./src/state/gameMachine.types";
+
 export type ValidLengthAndDefMessage = {
   type: "validLengthAndDef";
   length: number;
@@ -38,3 +40,25 @@ export type ServerToClientMessage =
   | TimeAndLettersReply
   | StartNewGameMessage
   | PlayerSolutionMessage;
+
+export type WithConnectionId<Type extends { type: string }> = Type & {
+  connectionId: string;
+};
+
+type addId<Events extends { type: string }> = {
+  [Event in Events as Event["type"]]: WithConnectionId<Event>;
+}[Events["type"]];
+
+export type ClientToServerMessageWithId = addId<ClientToServerMessage>;
+
+export type SendToParentEvent =
+  | ClientToServerMessageWithId
+  | {
+      type: "";
+    };
+
+export type ServerGameMachineContext = {
+  time: number;
+  randomLetters: string;
+  players: Record<string, string>;
+};

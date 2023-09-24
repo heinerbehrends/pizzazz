@@ -11,7 +11,7 @@ import {
   type StartGameMessage,
 } from "./gameMachine.types";
 import { gameDuration } from "../srcServer/serverGameMachine";
-import { swapLetters } from "./dragAndDropLogic";
+import { swapLetters } from "./dragAndDropMachine.functions";
 import { GameMachineContext, getRandomAbc } from "./gameMachine";
 
 export function showNextFrame(

@@ -1,21 +1,19 @@
-import {
-  TimeAndLettersReply,
-  ValidLengthAndDefMessage,
-  PlayerSolutionMessage,
-  StartNewGameMessage,
-  UserDisconnectedEvent,
-} from "../../server.types";
-import { ScreenNameMessage } from "../components/Buttons";
 import { getValidWordLength, findValidWords } from "./findValidWords";
 import { generateRandomLetters } from "./generateRandomLetters";
-import {
-  ServerGameMachineContext,
-  SendToParentEvent,
-  gameDuration,
-} from "./serverGameMachine";
-import { withConnectionId } from "./serverMachine";
+import { gameDuration } from "./serverGameMachine";
 import dictionary from "./dictionary.json";
 import dictWithSortedKeys from "./associative.json";
+import { type ScreenNameMessage } from "../components/Buttons";
+import {
+  type TimeAndLettersReply,
+  type ValidLengthAndDefMessage,
+  type PlayerSolutionMessage,
+  type StartNewGameMessage,
+  type UserDisconnectedEvent,
+  type SendToParentEvent,
+  type ServerGameMachineContext,
+  type WithConnectionId,
+} from "../../server.types";
 
 export function retrieveDefinition(letters: string, validWordLength: number) {
   if (validWordLength > 0) {
@@ -96,7 +94,7 @@ export function countdownTime(context: ServerGameMachineContext) {
 
 export function saveNameAndId(
   context: ServerGameMachineContext,
-  event: withConnectionId<ScreenNameMessage>
+  event: WithConnectionId<ScreenNameMessage>
 ) {
   return {
     ...context,
@@ -105,7 +103,7 @@ export function saveNameAndId(
 }
 export function saveId(
   context: ServerGameMachineContext,
-  event: withConnectionId<{ type: "newPlayer" }>
+  event: WithConnectionId<{ type: "newPlayer" }>
 ) {
   return {
     ...context,

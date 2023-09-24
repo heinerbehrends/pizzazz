@@ -1,5 +1,8 @@
 import { assign, createMachine } from "xstate";
-import { getDragDistance, getDropTileIndex } from "./dragAndDropLogic";
+import {
+  getDragDistance,
+  getDropTileIndex,
+} from "./dragAndDropMachine.functions";
 import { sendParent } from "xstate/lib/actions";
 import type PartySocket from "partysocket";
 
