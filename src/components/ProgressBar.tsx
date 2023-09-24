@@ -2,7 +2,7 @@ import { useActor } from "@xstate/react";
 import { useContext, useEffect, useRef } from "react";
 import { css } from "../../styled-system/css";
 import { GlobalStateContext } from "../state/contextProvider";
-import { gameDuration } from "../srcServer/serverGameMachine";
+import { gameDuration } from "../srcServer/stateServer/serverGameMachine";
 
 const containerStyles = css({
   marginX: "auto",

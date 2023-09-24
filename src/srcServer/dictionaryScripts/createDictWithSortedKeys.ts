@@ -1,6 +1,6 @@
 // this file will not run properly when type is set to 'module' in package.json
 import * as R from "remeda";
-// @ts-expect-error
+// @ts-ignore-error
 import fs from "fs";
 
 const wordListFile = fs.readFileSync("./wordList.txt");
@@ -12,7 +12,7 @@ const sortABC = (word: string) =>
     R.sort((a, b) => a.localeCompare(b)),
     R.join("")
   );
-// @ts-expect-error
+// @ts-ignore-error
 const parseLimit7 = (wordListFile: Buffer) =>
   R.pipe(
     wordListFile,

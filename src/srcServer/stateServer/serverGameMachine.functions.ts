@@ -3,7 +3,7 @@ import { generateRandomLetters } from "./generateRandomLetters";
 import { ServerGameMachineContext, gameDuration } from "./serverGameMachine";
 import dictionary from "./dictionary.json";
 import dictWithSortedKeys from "./associative.json";
-import { type ScreenNameMessage } from "../components/Buttons";
+import { type ScreenNameMessage } from "../../components/Buttons";
 import {
   type TimeAndLettersReply,
   type ValidLengthAndDefMessage,
@@ -12,8 +12,8 @@ import {
   type UserDisconnectedEvent,
   type SendToParentEvent,
   type WithConnectionId,
-} from "../../server.types";
-import { SolutionMessage } from "../state/gameMachine.types";
+} from "../../../server.types";
+import { SolutionMessage } from "../../state/gameMachine.types";
 
 function retrieveDefinition(letters: string, validWordLength: number) {
   if (validWordLength > 0) {

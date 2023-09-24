@@ -1,11 +1,12 @@
+// script to create dictionary.json with ts-node
 // this file will not run properly when type is set to 'module' in package.json
-// @ts-expect-error
+// @ts-ignore-error
 const { AsyncDatabase } = require("promised-sqlite3");
-// @ts-expect-error
+// @ts-ignore-error
 import fs from "fs";
 import * as R from "remeda";
-import associative from "./associative.json";
-import { sortABC } from "./findValidWords";
+import associative from "../stateServer/associative.json";
+import { sortABC } from "../stateServer/findValidWords";
 
 type DictionaryEntry = {
   _id: number;
