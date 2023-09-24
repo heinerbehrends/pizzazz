@@ -1,28 +1,27 @@
 import { assign, createMachine } from "xstate";
-import {
-  getDragDistance,
-  getDropTileIndex,
-} from "./dragAndDropMachine.functions";
 import { sendParent } from "xstate/lib/actions";
+import {
+  initializeDrag,
+  resetDrag,
+  setDistanceFromDragStart,
+  updateLetters,
+} from "./dragAndDropMachine.functions";
+import {
+  type Coordinates,
+  dragAndDropMachineSchema,
+} from "./dragAndDropMachine.types";
 import type PartySocket from "partysocket";
 
 export type DragAndDropContext = {
   letters: string;
-  dragStartMousePosition: {
-    x: number;
-    y: number;
-  };
-  distanceFromDragStart: {
-    x: number;
-    y: number;
-  };
+  dragStartMousePosition: Coordinates;
+  distanceFromDragStart: Coordinates;
   dragTileIndex: number | undefined;
   socket: PartySocket;
 };
 
 export const dragAndDropMachine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QQE4EMoEEB2EAiKA9gA4B0AlhADZgDEqGsALmikwNoAMAuoqMYVjkm5Qtj4gAHogCMANgAcpAMyrlAFgDsc7Z00AmfeoA0IAJ6zNm0vLlyAnOpmcH9mVYC+H0wyy4CJKS+UOTYULQAtoQArrBgUQBuYFy8SCACQiJiEtIITgCspIr5nHqcMurKMgqmFgjOpJzKLorq+Zrq+nLu6l4+6H74RGTBoeG+YLgpEhnCouJpuTL5+kXKcu0yhgqV9vY15rKcjc12O+2d3R1e3iDYhBBwEr44QyQzgnPZi4gAtHK1P5WUjqBzKfQKVR2AwKex9EAvfzDCjUMAfTLzHKITqA+r2Va2TQuTiVPQ7BTwxFvEYDEJhdFfBagXKqaz4rrKBT6DSOLm4-ScVaaEqcEr4zj2ZQdXo3IA */
     id: "dragAndDropMachine",
     initial: "idle",
     context: {
@@ -60,60 +59,18 @@ export const dragAndDropMachine = createMachine(
         },
       },
     },
-    schema: {
-      context: {
-        letters: "pizzazz",
-        dragStartMousePosition: {} as { x: number; y: number },
-        distanceFromDragStart: {} as { x: number; y: number },
-        dragTileIndex: undefined as number | undefined,
-        socket: {} as PartySocket,
-      },
-      events: {} as MouseEvent,
-    },
+    ...dragAndDropMachineSchema,
+    /* cspell:disable-next-line */
     /** @xstate-layout N4IgpgJg5mDOIC5QQE4EMoEEB2EAiKA9gA4B0AlhADZgDEAtoQK6ySEDu2A2gAwC6iUMUKxyAF3KFsgkAA9EARgBsADlIBmBQBYATAFYtAdiU9DunQBoQAT0VL1G3SqVaAnK5471W9SoC+flaoGDj4RGTBUFDk2FAMzKxMxLwCSCDCohJSMvIICh6knip6eqpehuo8Rla2CCoKpHoBgSDYhBBwMpGhBCQyGeKS0mm5ALRKNYjjAUHoWLi9ZJQ0-SKD2SOIupN1ho0q6odHx4czIN0L4aSR0bGrmUM5iOo6PKQ67q6G+t4Khl87Ao8A4nUHNPxAA */
     tsTypes: {} as import("./dragAndDropMachine.typegen").Typegen0,
     predictableActionArguments: true,
   },
   {
     actions: {
-      initializeDrag: assign((context, mouseEvent: MouseEvent) => {
-        const x = mouseEvent.clientX;
-        const y = mouseEvent.clientY;
-        const dragTileIndex = Number(
-          (mouseEvent.target as HTMLDivElement).dataset.index
-        );
-        return {
-          ...context,
-          dragStartMousePosition: {
-            x,
-            y,
-          },
-          dragTileIndex,
-        };
-      }),
-      resetDrag: assign((context) => ({
-        ...context,
-        distanceFromDragStart: { x: 0, y: 0 },
-        dragTileIndex: undefined,
-      })),
-
-      updateLetters: sendParent((context, event: MouseEvent) => {
-        return {
-          type: "letterDropped",
-          dragIndex: Number((event?.target as HTMLDivElement).dataset.index),
-          dropIndex: getDropTileIndex(context, event),
-        };
-      }),
-      setDistanceFromDragStart: assign(
-        (context: DragAndDropContext, event: MouseEvent) => {
-          const distanceFromDragStart = getDragDistance(context, event);
-
-          return {
-            ...context,
-            distanceFromDragStart,
-          };
-        }
-      ),
+      initializeDrag: assign(initializeDrag),
+      resetDrag: assign(resetDrag),
+      updateLetters: sendParent(updateLetters),
+      setDistanceFromDragStart: assign(setDistanceFromDragStart),
     },
   }
 );
