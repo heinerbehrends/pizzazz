@@ -25,27 +25,14 @@ export default {
       console.log("clientToServerMessage: ", message.type);
       serverService.send({ ...message, connectionId });
     });
-    // listen for client messages
+
     // send machine events to the client
     serverService.onEvent((evt) => {
-      console.log("serverToClientMessage", evt.type);
       if (evt.type === "solution") {
         return;
       }
       const event = evt as ServerToClientMessage;
-      room.broadcast(JSON.stringify(event), event?.excludePlayers);
-      // if (event.type === "timeAndLettersReply") {
-      //   console.log("timeAndLettersReply", event.excludePlayers);
-      //   return;
-      // }
-      // sendToClient({
-      //   toSender: ["validLengthAndDef"],
-      //   toEveryoneElse: ["playerSolution"],
-      //   toEveryone: ["startNewGame"],
-      //   event: event as ServerToClientMessage,
-      //   connection,
-      //   room,
-      // });
+      room.broadcast(JSON.stringify(event), event?.excludedPlayers);
     });
   },
 } satisfies PartyKitServer;

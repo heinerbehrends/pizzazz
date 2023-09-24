@@ -1,15 +1,15 @@
 export type ValidLengthAndDefMessage = {
   type: "validLengthAndDef";
   length: number;
-  definition: string;
-  excludePlayers?: string[];
+  definition: string | null;
+  excludedPlayers?: string[];
 };
 
 export type TimeAndLettersReply = {
   type: "timeAndLettersReply";
   letters: string;
   time: number;
-  excludePlayers?: string[];
+  excludedPlayers: string[];
 };
 
 export type StartNewGameMessage = {
@@ -17,7 +17,7 @@ export type StartNewGameMessage = {
   letters: string;
   time: number;
   validWords: string[];
-  excludePlayers?: string[];
+  excludedPlayers?: string[];
 };
 
 export type PlayerSolutionMessage = {
@@ -25,7 +25,7 @@ export type PlayerSolutionMessage = {
   name: string;
   length: number;
   score: number;
-  excludePlayers?: string[];
+  excludedPlayers: string[];
 };
 
 export type UserDisconnectedEvent = {

@@ -112,10 +112,10 @@ function reactToClient(
         type: "timeAndLettersReply",
         time: context.time,
         letters: context.randomLetters,
-        excludePlayers: Object.keys(context.players).filter(
+        excludedPlayers: Object.keys(context.players).filter(
           (id) => id !== event.connectionId
         ),
-      } as TimeAndLettersReply;
+      } satisfies TimeAndLettersReply;
 
     case "updateLetters":
       const validWordLength = getValidWordLength(event.letters);
@@ -123,10 +123,10 @@ function reactToClient(
         type: "validLengthAndDef",
         length: validWordLength,
         definition: retrieveDefinition(event.letters, validWordLength),
-        excludePlayers: Object.keys(context.players).filter(
+        excludedPlayers: Object.keys(context.players).filter(
           (id) => id !== event.connectionId
         ),
-      } as ValidLengthAndDefMessage;
+      } satisfies ValidLengthAndDefMessage;
 
     case "solution":
       console.log(context.players);
@@ -135,8 +135,8 @@ function reactToClient(
         name: context.players[event.connectionId],
         length: event.solution.length,
         score: event.score,
-        excludePlayers: [event.connectionId],
-      } as PlayerSolutionMessage;
+        excludedPlayers: [event.connectionId],
+      } satisfies PlayerSolutionMessage;
 
     case "":
       const validWords = findValidWords(
@@ -148,7 +148,7 @@ function reactToClient(
         letters: context.randomLetters,
         time: context.time,
         validWords,
-      } as StartNewGameMessage;
+      } satisfies StartNewGameMessage;
   }
 }
 
