@@ -15,8 +15,8 @@ import {
   displaySolution,
 } from "./gameMachine.assignFunctions";
 import { gameMachineSchema } from "./gameMachine.types";
-import { type TimeAndLettersReply } from "../../server.types";
 import { gameDuration } from "../srcServer/stateServer/serverGameMachine";
+import { type TimeAndLettersReply } from "../../server.types";
 
 export type GameMachineContext = {
   letters: string;
@@ -26,6 +26,7 @@ export type GameMachineContext = {
   definition: string;
   time: number;
   name: string;
+  validWords: string[];
 };
 
 export function gameMachine(socket: PartySocket) {
@@ -128,6 +129,7 @@ export function gameMachine(socket: PartySocket) {
         definition: "a micro-scrabble word game",
         time: gameDuration,
         name: "",
+        validWords: [],
       },
       ...gameMachineSchema,
       tsTypes: {} as import("./gameMachine.typegen").Typegen0,

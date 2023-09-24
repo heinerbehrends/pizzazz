@@ -80,6 +80,7 @@ export const gameMachineSchema = {
       definition: "" as string,
       time: 50 as number,
       name: "" as string,
+      validWords: [] as string[],
     },
     events: {} as
       | ServerToClientMessage

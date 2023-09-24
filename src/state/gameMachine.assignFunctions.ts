@@ -108,6 +108,7 @@ export function setupNewGame(
     letters: event.letters,
     lettersStatic: event.letters,
     time: gameDuration,
+    validWords: event.validWords,
   };
 }
 export function setupJoinGame(

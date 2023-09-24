@@ -37,6 +37,7 @@ export function reactToClient(
         type: "timeAndLettersReply",
         time: context.time,
         letters: context.randomLetters,
+        validWords: context.validWords,
         excludedPlayers: Object.keys(context.players).filter(
           (id) => id !== event.connectionId
         ),

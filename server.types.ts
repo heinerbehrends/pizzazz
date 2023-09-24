@@ -10,6 +10,7 @@ export type ValidLengthAndDefMessage = {
 export type TimeAndLettersReply = {
   type: "timeAndLettersReply";
   letters: string;
+  validWords: string[];
   time: number;
   excludedPlayers: string[];
 };
@@ -78,6 +79,7 @@ export const serverGameMachineSchema = {
       randomLetters: "" as string,
       players: {} as Record<string, string>,
       solutions: {} as Record<string, string>,
+      validWords: [] as string[],
     },
   },
 };

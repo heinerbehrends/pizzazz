@@ -19,6 +19,7 @@ export type ServerGameMachineContext = {
   randomLetters: string;
   players: Record<string, string>;
   solutions: Record<string, string>;
+  validWords: string[];
 };
 
 export function serverGameMachine() {
@@ -63,6 +64,7 @@ export function serverGameMachine() {
         randomLetters: generateRandomLetters(),
         players: {},
         solutions: {},
+        validWords: [],
       },
       predictableActionArguments: true,
       ...serverGameMachineSchema,
