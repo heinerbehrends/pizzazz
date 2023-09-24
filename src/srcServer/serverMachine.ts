@@ -1,8 +1,7 @@
 import { createMachine } from "xstate";
 import { serverGameMachine } from "./serverGameMachine";
 import { TimeAndLettersReply, UserDisconnectedEvent } from "../../server.types";
-import { SolutionMessage, UpdateLettersMessage } from "../state/gameMachine";
-import { ScreenNameMessage } from "../components/Buttons";
+import { ClientToServerMessage } from "../state/gameMachine";
 
 export function serverMachine() {
   return createMachine({
@@ -39,14 +38,20 @@ export function serverMachine() {
         | { type: "lastUserDisconnected" }
         | withConnectionId<{ type: "newPlayer" }>
         | UserDisconnectedEvent
-        | withConnectionId<ScreenNameMessage>
         | withConnectionId<TimeAndLettersReply>
-        | withConnectionId<UpdateLettersMessage>
-        | withConnectionId<SolutionMessage>,
+        | ClientToServerMessageWithId,
     },
     tsTypes: {} as import("./serverMachine.typegen").Typegen0,
     predictableActionArguments: true,
   });
 }
 
-export type withConnectionId<Type extends {}> = Type & { connectionId: string };
+export type withConnectionId<Type extends { type: string }> = Type & {
+  connectionId: string;
+};
+
+type addId<Events extends { type: string }> = {
+  [Event in Events as Event["type"]]: withConnectionId<Event>;
+}[Events["type"]];
+
+export type ClientToServerMessageWithId = addId<ClientToServerMessage>;

@@ -8,11 +8,10 @@ import {
 } from "../../server.types";
 import { sendParent } from "xstate/lib/actions";
 import { generateRandomLetters } from "./generateRandomLetters";
-import { SolutionMessage, UpdateLettersMessage } from "../state/gameMachine";
 import { findValidWords, getValidWordLength } from "./findValidWords";
 import dictionary from "./dictionary.json";
 import dictWithSortedKeys from "./associative.json";
-import { withConnectionId } from "./serverMachine";
+import { ClientToServerMessageWithId, withConnectionId } from "./serverMachine";
 import { ScreenNameMessage } from "../components/Buttons";
 
 export const gameDuration = 50;
@@ -64,9 +63,7 @@ export function serverGameMachine() {
           | { type: "updateTime" }
           | withConnectionId<{ type: "newPlayer" }>
           | UserDisconnectedEvent
-          | withConnectionId<ScreenNameMessage>
-          | withConnectionId<UpdateLettersMessage>
-          | withConnectionId<SolutionMessage>,
+          | ClientToServerMessageWithId,
         actions: {} as
           | { type: "updateTime" }
           | { type: "newRandomLetters" }
@@ -100,9 +97,7 @@ export function serverGameMachine() {
 }
 
 type SendToParentEvent =
-  | withConnectionId<ScreenNameMessage>
-  | withConnectionId<UpdateLettersMessage>
-  | withConnectionId<SolutionMessage>
+  | ClientToServerMessageWithId
   | {
       type: "";
     };
