@@ -10,9 +10,9 @@ import {
   type LetterDroppedEvent,
   type StartGameMessage,
 } from "./gameMachine.types";
-import { gameDuration } from "../srcServer/serverGameMachine";
 import { swapLetters } from "./dragAndDropMachine.functions";
 import { GameMachineContext, getRandomAbc } from "./gameMachine";
+import { gameDuration } from "../srcServer/stateServer/serverGameMachine";
 
 export function showNextFrame(
   context: GameMachineContext,

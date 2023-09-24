@@ -1,5 +1,5 @@
 import { assign, createMachine } from "xstate";
-import { serverGameMachineSchema } from "../../server.types";
+import { serverGameMachineSchema } from "../../../server.types";
 import { log, sendParent } from "xstate/lib/actions";
 import { generateRandomLetters } from "./generateRandomLetters";
 import {

@@ -1,6 +1,6 @@
 import type { PartyKitServer } from "partykit/server";
 import { interpret } from "xstate";
-import { serverMachine } from "./src/srcServer/serverMachine";
+import { serverMachine } from "./src/srcServer/stateServer/serverMachine";
 import { ServerToClientMessage, UserDisconnectedEvent } from "./server.types";
 import { ClientToServerMessage } from "./src/state/gameMachine.types";
 

@@ -3,7 +3,6 @@ import { assign, createMachine } from "xstate";
 import { forwardTo } from "xstate/lib/actions";
 import { animationMachine } from "./animationMachine";
 import { dragAndDropMachine } from "./dragAndDropMachine";
-import { gameDuration } from "../srcServer/serverGameMachine";
 import {
   countdownUpdateTime,
   updateLetters,
@@ -17,6 +16,7 @@ import {
 } from "./gameMachine.assignFunctions";
 import { gameMachineSchema } from "./gameMachine.types";
 import { type TimeAndLettersReply } from "../../server.types";
+import { gameDuration } from "../srcServer/stateServer/serverGameMachine";
 
 export type GameMachineContext = {
   letters: string;

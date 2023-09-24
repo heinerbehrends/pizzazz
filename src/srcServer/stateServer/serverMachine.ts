@@ -1,6 +1,6 @@
 import { createMachine } from "xstate";
 import { serverGameMachine } from "./serverGameMachine";
-import { serverMachineSchema } from "../../server.types";
+import { serverMachineSchema } from "../../../server.types";
 
 export function serverMachine() {
   return createMachine({
