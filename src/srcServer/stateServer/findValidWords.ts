@@ -1,5 +1,5 @@
 import * as R from "remeda";
-import dictWithSortedKeys from "./associative.json";
+import dictWithSortedKeys from "../associative.json";
 
 export function sortABC(word: string) {
   return R.pipe(
