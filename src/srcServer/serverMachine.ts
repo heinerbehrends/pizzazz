@@ -9,7 +9,7 @@ export function serverMachine() {
     states: {
       idle: {
         on: {
-          userConnected: {
+          firstUserConnected: {
             target: "connected",
           },
         },

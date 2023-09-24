@@ -86,7 +86,7 @@ export const serverMachineSchema = {
   schema: {
     context: {} as { value: string },
     events: {} as
-      | { type: "userConnected" }
+      | { type: "firstUserConnected" }
       | { type: "lastUserDisconnected" }
       | WithConnectionId<{ type: "newPlayer" }>
       | UserDisconnectedEvent
