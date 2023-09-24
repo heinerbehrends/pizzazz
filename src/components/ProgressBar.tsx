@@ -2,6 +2,7 @@ import { useActor } from "@xstate/react";
 import { useContext, useEffect, useRef } from "react";
 import { css } from "../../styled-system/css";
 import { GlobalStateContext } from "../state/contextProvider";
+import { gameDuration } from "../srcServer/serverGameMachine";
 
 const containerStyles = css({
   marginX: "auto",
@@ -26,13 +27,13 @@ const barStyles = css({
 export function ProgressBar() {
   const { gameService } = useContext(GlobalStateContext);
   const [state] = useActor(gameService);
-  const gameDuration = 50;
   const progressBarRef = useRef(null);
 
   useEffect(() => {
     if (progressBarRef.current === null) {
       return;
     }
+    console.log("progress bar time: ", state.context.time);
     const progressBarKeyframes = [
       { width: `${100 - (state.context.time / gameDuration) * 100}%` },
       { width: "100%" },
@@ -42,7 +43,7 @@ export function ProgressBar() {
     };
     const progressBarDOM = progressBarRef.current as HTMLDivElement;
     progressBarDOM.animate(progressBarKeyframes, progressBarTiming);
-  }, [state.context.time]);
+  }, [state.context.time, state.context.lettersStatic, state.value]);
 
   if (state.value === "dragAndDrop") {
     return (
