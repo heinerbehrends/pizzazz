@@ -1,19 +1,28 @@
 import { assign, createMachine } from "xstate";
 import { entryAnimationMachine } from "./entryAnimationMachine";
 import { dragAndDropMachine } from "./dragAndDropMachine";
-import { swapLetters } from "./dragAndDropLogic";
 import PartySocket from "partysocket";
-import * as R from "remeda";
 import { forwardTo } from "xstate/lib/actions";
-import {
-  PlayerSolutionMessage,
-  ServerToClientMessage,
-  StartNewGameMessage,
-  TimeAndLettersReply,
-  ValidLengthAndDefMessage,
-} from "../../server.types";
+import { ServerToClientMessage, TimeAndLettersReply } from "../../server.types";
 import { gameDuration } from "../srcServer/serverGameMachine";
-import { ScreenNameMessage } from "../components/Buttons";
+import {
+  countdownUpdateTime,
+  updateLetters,
+  showNextFrame,
+  updateValidLengthAndDef,
+  setTimeAndLetters,
+  setupNewGame,
+  setupJoinGame,
+  setupWaitingGame,
+  displaySolution,
+} from "./gameMachine.assignFunctions";
+import {
+  ClientToServerMessage,
+  JoinGameEvent,
+  LetterDroppedEvent,
+  StartGameMessage,
+  WaitMessage,
+} from "./gameMachine.types";
 
 export type GameMachineContext = {
   letters: string;
@@ -213,172 +222,9 @@ export function gameMachine(socket: PartySocket) {
   );
 }
 
-function updateLetters(context: GameMachineContext, event: LetterDroppedEvent) {
-  if (event.dropIndex === null) {
-    return context;
-  }
-  const letters = swapLetters(
-    context.letters,
-    event.dragIndex,
-    event.dropIndex
-  );
-  return {
-    ...context,
-    letters,
-  };
-}
-
 const abc = "abcdefghijklmnopqrstuvwxyz";
 
 const getRandomIndex = (string: string) =>
   Math.floor(Math.random() * string.length);
 const getRandomLetter = (string: string) => string[getRandomIndex(string)];
-const getRandomAbc = () => getRandomLetter(abc);
-
-function showNextFrame(context: GameMachineContext, event: AnimateEvent) {
-  const staticPart = context.lettersStatic.substring(0, event.index);
-  const randomPart = R.pipe(
-    Array(7 - event.index),
-    R.map(getRandomAbc),
-    (array) => array.join("")
-  );
-
-  return {
-    ...context,
-    letters: staticPart + randomPart,
-  };
-}
-
-function updateValidLengthAndDef(
-  context: GameMachineContext,
-  event: ValidLengthAndDefMessage
-) {
-  function getDefinition(event: ValidLengthAndDefMessage) {
-    const isValid = event.length > 0;
-    if (event.definition) {
-      return event.definition;
-    }
-    if (isValid) {
-      return "no definition found";
-    }
-    return "find a valid word";
-  }
-  return {
-    ...context,
-    validWordLength: event.length,
-    definition: getDefinition(event),
-  };
-}
-
-function setTimeAndLetters(
-  context: GameMachineContext,
-  event: StartGameMessage
-): GameMachineContext {
-  console.log("setTimeAndLetters event: ", event);
-  return {
-    ...context,
-    time: event.time,
-    lettersStatic: event.letters,
-  };
-}
-
-function setupWaitingGame(
-  context: GameMachineContext,
-  event: StartNewGameMessage | TimeAndLettersReply
-): GameMachineContext {
-  console.log("Hello from setupNewGame: ", event);
-  return {
-    ...context,
-    message: `A new game will start in ${event.time} seconds`,
-    validWordLength: 0,
-    lettersStatic: event.letters,
-    time: event.time,
-  };
-}
-
-function setupNewGame(
-  context: GameMachineContext,
-  event: StartNewGameMessage | TimeAndLettersReply
-): GameMachineContext {
-  console.log("Hello from setupNewGame: ", event);
-  return {
-    ...context,
-    message: `Move the letters to find valid words`,
-    validWordLength: 0,
-    letters: event.letters,
-    lettersStatic: event.letters,
-    time: gameDuration,
-  };
-}
-function setupJoinGame(
-  context: GameMachineContext,
-  event: StartNewGameMessage | TimeAndLettersReply
-): GameMachineContext {
-  console.log("Hello from setupNewGame: ", event);
-  return {
-    ...context,
-    message: "Move the letters to find valid words",
-    validWordLength: 0,
-    time: context.time,
-  };
-}
-
-function countdownUpdateTime(context: GameMachineContext) {
-  return {
-    ...context,
-    time: context.time - 1,
-    message: `A new game will start in ${context.time - 1} seconds`,
-  };
-}
-
-function displaySolution(
-  context: GameMachineContext,
-  event: PlayerSolutionMessage
-) {
-  return {
-    ...context,
-    message: `${event.name} played a ${event.length}-letter-word for ${event.score} points`,
-  };
-}
-
-export type UpdateLettersMessage = {
-  type: "updateLetters";
-  letters: string;
-};
-
-type LetterDroppedEvent = {
-  type: "letterDropped";
-  dragIndex: number;
-  dropIndex: number;
-};
-
-type StartGameMessage = {
-  type: "startGame";
-  time: number;
-  letters: string;
-};
-
-type WaitMessage = {
-  type: "wait";
-  time: number;
-};
-
-export type AnimateEvent = {
-  type: "animate";
-  index: number;
-};
-
-type JoinGameEvent = {
-  type: "joinGame";
-};
-
-export type SolutionMessage = {
-  type: "solution";
-  solution: string;
-  score: number;
-};
-
-export type ClientToServerMessage =
-  | UpdateLettersMessage
-  | ScreenNameMessage
-  | SolutionMessage;
+export const getRandomAbc = () => getRandomLetter(abc);

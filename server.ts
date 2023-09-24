@@ -2,7 +2,7 @@ import type { Party, PartyConnection, PartyKitServer } from "partykit/server";
 import { interpret } from "xstate";
 import { serverMachine } from "./src/srcServer/serverMachine";
 import { ServerToClientMessage, UserDisconnectedEvent } from "./server.types";
-import { ClientToServerMessage } from "./src/state/gameMachine";
+import { ClientToServerMessage } from "./src/state/gameMachine.types";
 
 const serverService = interpret(serverMachine()).start();
 

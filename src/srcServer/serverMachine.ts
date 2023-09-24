@@ -1,7 +1,7 @@
 import { createMachine } from "xstate";
 import { serverGameMachine } from "./serverGameMachine";
 import { TimeAndLettersReply, UserDisconnectedEvent } from "../../server.types";
-import { ClientToServerMessage } from "../state/gameMachine";
+import { ClientToServerMessage } from "../state/gameMachine.types";
 
 export function serverMachine() {
   return createMachine({
