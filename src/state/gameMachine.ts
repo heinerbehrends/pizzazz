@@ -1,9 +1,8 @@
+import PartySocket from "partysocket";
 import { assign, createMachine } from "xstate";
+import { forwardTo } from "xstate/lib/actions";
 import { entryAnimationMachine } from "./entryAnimationMachine";
 import { dragAndDropMachine } from "./dragAndDropMachine";
-import PartySocket from "partysocket";
-import { forwardTo } from "xstate/lib/actions";
-import { ServerToClientMessage, TimeAndLettersReply } from "../../server.types";
 import { gameDuration } from "../srcServer/serverGameMachine";
 import {
   countdownUpdateTime,
@@ -16,13 +15,8 @@ import {
   setupWaitingGame,
   displaySolution,
 } from "./gameMachine.assignFunctions";
-import {
-  ClientToServerMessage,
-  JoinGameEvent,
-  LetterDroppedEvent,
-  StartGameMessage,
-  WaitMessage,
-} from "./gameMachine.types";
+import { gameMachineSchema } from "./gameMachine.types";
+import { type TimeAndLettersReply } from "../../server.types";
 
 export type GameMachineContext = {
   letters: string;
@@ -135,53 +129,7 @@ export function gameMachine(socket: PartySocket) {
         time: gameDuration,
         name: "",
       },
-      schema: {
-        services: {
-          entryAnimationMachine: {} as {
-            src: () => (callback: ({}) => {}) => void;
-            data: {
-              letters: string;
-              index: number;
-            };
-          },
-          dragAndDropMachine: {} as {
-            src: () => (callback: ({}) => {}) => void;
-            data: {
-              letters: string;
-            };
-          },
-        },
-        actions: {} as
-          | { type: "animate"; index: number }
-          | { type: "updateLetters" }
-          | { type: "sendLettersToServer" }
-          | { type: "setTime" }
-          | { type: "showNextFrame" }
-          | { type: "sendToServer" }
-          | { type: "countdown" }
-          | { type: "setupJoinGame" }
-          | { type: "setupWaitingGame" }
-          | { type: "displaySolution" },
-
-        context: {
-          letters: "pizzazz" as string,
-          lettersStatic: "pizzazz" as string,
-          validWordLength: 0 as number,
-          message: "" as string,
-          definition: "" as string,
-          time: 50 as number,
-          name: "" as string,
-        },
-        events: {} as
-          | ServerToClientMessage
-          | ClientToServerMessage
-          | StartGameMessage
-          | WaitMessage
-          | LetterDroppedEvent
-          | { type: "animate"; index: number }
-          | MouseEvent
-          | JoinGameEvent,
-      },
+      ...gameMachineSchema,
       tsTypes: {} as import("./gameMachine.typegen").Typegen0,
       predictableActionArguments: true,
     },

@@ -57,9 +57,40 @@ export type SendToParentEvent =
       type: "";
     };
 
-export type ServerGameMachineContext = {
-  time: number;
-  randomLetters: string;
-  players: Record<string, string>;
-  solutions: Record<string, string>;
+export const serverGameMachineSchema = {
+  schema: {
+    events: {} as
+      | { type: "updateTime" }
+      | WithConnectionId<{ type: "newPlayer" }>
+      | UserDisconnectedEvent
+      | ClientToServerMessageWithId,
+    actions: {} as
+      | { type: "updateTime" }
+      | { type: "setupNewGame" }
+      | { type: "reactToClient" }
+      | { type: "removeNameAndId" }
+      | { type: "saveNameAndId" }
+      | { type: "saveId" }
+      | { type: "saveSolution" }
+      | { type: "logSolutions" },
+    context: {
+      time: 50 as number,
+      randomLetters: "" as string,
+      players: {} as Record<string, string>,
+      solutions: {} as Record<string, string>,
+    },
+  },
+};
+
+export const serverMachineSchema = {
+  schema: {
+    context: {} as { value: string },
+    events: {} as
+      | { type: "userConnected" }
+      | { type: "lastUserDisconnected" }
+      | WithConnectionId<{ type: "newPlayer" }>
+      | UserDisconnectedEvent
+      | WithConnectionId<TimeAndLettersReply>
+      | ClientToServerMessageWithId,
+  },
 };

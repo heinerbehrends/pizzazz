@@ -1,10 +1,5 @@
 import { assign, createMachine } from "xstate";
-import {
-  ClientToServerMessageWithId,
-  ServerGameMachineContext,
-  UserDisconnectedEvent,
-  WithConnectionId,
-} from "../../server.types";
+import { serverGameMachineSchema } from "../../server.types";
 import { log, sendParent } from "xstate/lib/actions";
 import { generateRandomLetters } from "./generateRandomLetters";
 import {
@@ -18,6 +13,13 @@ import {
 } from "./serverGameMachine.functions";
 
 export const gameDuration = 50;
+
+export type ServerGameMachineContext = {
+  time: number;
+  randomLetters: string;
+  players: Record<string, string>;
+  solutions: Record<string, string>;
+};
 
 export function serverGameMachine() {
   return createMachine(
@@ -62,29 +64,8 @@ export function serverGameMachine() {
         players: {},
         solutions: {},
       },
-      schema: {
-        events: {} as
-          | { type: "updateTime" }
-          | WithConnectionId<{ type: "newPlayer" }>
-          | UserDisconnectedEvent
-          | ClientToServerMessageWithId,
-        actions: {} as
-          | { type: "updateTime" }
-          | { type: "setupNewGame" }
-          | { type: "reactToClient" }
-          | { type: "removeNameAndId" }
-          | { type: "saveNameAndId" }
-          | { type: "saveId" }
-          | { type: "saveSolution" }
-          | { type: "logSolutions" },
-        context: {
-          time: 50 as number,
-          randomLetters: "" as string,
-          players: {} as Record<string, string>,
-          solutions: {} as Record<string, string>,
-        },
-      },
       predictableActionArguments: true,
+      ...serverGameMachineSchema,
       tsTypes: {} as import("./serverGameMachine.typegen").Typegen0,
     },
     {

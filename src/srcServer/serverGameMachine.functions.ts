@@ -1,6 +1,6 @@
 import { getValidWordLength, findValidWords } from "./findValidWords";
 import { generateRandomLetters } from "./generateRandomLetters";
-import { gameDuration } from "./serverGameMachine";
+import { ServerGameMachineContext, gameDuration } from "./serverGameMachine";
 import dictionary from "./dictionary.json";
 import dictWithSortedKeys from "./associative.json";
 import { type ScreenNameMessage } from "../components/Buttons";
@@ -11,7 +11,6 @@ import {
   type StartNewGameMessage,
   type UserDisconnectedEvent,
   type SendToParentEvent,
-  type ServerGameMachineContext,
   type WithConnectionId,
 } from "../../server.types";
 import { SolutionMessage } from "../state/gameMachine.types";

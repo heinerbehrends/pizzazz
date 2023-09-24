@@ -1,11 +1,6 @@
 import { createMachine } from "xstate";
 import { serverGameMachine } from "./serverGameMachine";
-import {
-  ClientToServerMessageWithId,
-  TimeAndLettersReply,
-  UserDisconnectedEvent,
-  WithConnectionId,
-} from "../../server.types";
+import { serverMachineSchema } from "../../server.types";
 
 export function serverMachine() {
   return createMachine({
@@ -34,16 +29,7 @@ export function serverMachine() {
         },
       },
     },
-    schema: {
-      context: {} as { value: string },
-      events: {} as
-        | { type: "userConnected" }
-        | { type: "lastUserDisconnected" }
-        | WithConnectionId<{ type: "newPlayer" }>
-        | UserDisconnectedEvent
-        | WithConnectionId<TimeAndLettersReply>
-        | ClientToServerMessageWithId,
-    },
+    ...serverMachineSchema,
     tsTypes: {} as import("./serverMachine.typegen").Typegen0,
     predictableActionArguments: true,
   });
