@@ -7,7 +7,7 @@ import { gameDuration } from "../srcServer/serverGameMachine";
 const containerStyles = css({
   marginX: "auto",
   position: "relative",
-  height: "11px",
+  height: "20px",
   background: "#fff",
   padding: "4.5px",
   boxShadow: "'1.8px 2.4px 1.8px rgba(0, 0, 0, 0.05)'",
