@@ -1,7 +1,7 @@
 /* eslint no-underscore-dangle: off */
 import * as R from "remeda";
 
-export const letterDistributionStd = {
+const letterDistributionStd = {
   e: 12,
   a: 9,
   i: 9,
@@ -33,7 +33,7 @@ export const letterDistributionStd = {
 
 const vowels = ["a", "e", "i", "o", "u"];
 
-export const bagOfLetters = R.pipe(
+const bagOfLetters = R.pipe(
   Object.keys(letterDistributionStd),
   R.map((letter) =>
     letter.repeat(

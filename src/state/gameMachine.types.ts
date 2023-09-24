@@ -1,7 +1,7 @@
 import { ServerToClientMessage } from "../../server.types";
 import { ScreenNameMessage } from "../components/Buttons";
 
-export type UpdateLettersMessage = {
+type UpdateLettersMessage = {
   type: "updateLetters";
   letters: string;
 };
@@ -18,7 +18,7 @@ export type StartGameMessage = {
   letters: string;
 };
 
-export type WaitMessage = {
+type WaitMessage = {
   type: "wait";
   time: number;
 };
@@ -28,7 +28,7 @@ export type AnimateEvent = {
   index: number;
 };
 
-export type JoinGameEvent = {
+type JoinGameEvent = {
   type: "joinGame";
 };
 

@@ -15,7 +15,7 @@ import {
 } from "../../server.types";
 import { SolutionMessage } from "../state/gameMachine.types";
 
-export function retrieveDefinition(letters: string, validWordLength: number) {
+function retrieveDefinition(letters: string, validWordLength: number) {
   if (validWordLength > 0) {
     return (
       dictionary?.[

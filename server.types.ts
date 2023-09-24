@@ -49,7 +49,7 @@ type addId<Events extends { type: string }> = {
   [Event in Events as Event["type"]]: WithConnectionId<Event>;
 }[Events["type"]];
 
-export type ClientToServerMessageWithId = addId<ClientToServerMessage>;
+type ClientToServerMessageWithId = addId<ClientToServerMessage>;
 
 export type SendToParentEvent =
   | ClientToServerMessageWithId

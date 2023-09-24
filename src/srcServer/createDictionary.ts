@@ -1,9 +1,13 @@
+// this file will not run properly when type is set to 'module' in package.json
+// @ts-expect-error
 const { AsyncDatabase } = require("promised-sqlite3");
+// @ts-expect-error
+import fs from "fs";
 import * as R from "remeda";
 import associative from "./associative.json";
-import fs from "fs";
 import { sortABC } from "./findValidWords";
-export type DictionaryEntry = {
+
+type DictionaryEntry = {
   _id: number;
   en_word: string;
   en_definition: string;
@@ -11,6 +15,7 @@ export type DictionaryEntry = {
   synonyms: string;
   antonyms: string;
 };
+
 (async () => {
   try {
     const db = await AsyncDatabase.open("./eng_dictionary.db");
@@ -37,31 +42,3 @@ export type DictionaryEntry = {
     console.log(err);
   }
 })();
-
-// const sqlDefinition = "SELECT en_definition from words WHERE en_word=?";
-
-// async function getWords() {
-//   return db.all(sqlWords, [], (error, rows: { en_word: string }[]) => {
-//     if (error) {
-//       throw error;
-//     }
-//     rows.forEach((row) => words.push(row.en_word));
-//     // console.log(words);
-//   });
-// }
-
-// const dictionary = words
-//   .filter((word) => word.length > 7)
-//   .reduce((accumulator, value) => {
-//     let definition = "";
-//     db.get(sqlDefinition, [value], (error, row: { en_definition: string }) => {
-//       if (error) {
-//         console.log(error);
-//       }
-//       definition = row.en_definition;
-//     });
-//     console.log(definition);
-//     return { ...accumulator, value: definition };
-//   }, {});
-
-// console.log(dictionary);

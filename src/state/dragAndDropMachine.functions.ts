@@ -14,10 +14,7 @@ function isOverlapping(tileCenter: Coordinates) {
   };
 }
 
-export function getDragDistance(
-  context: DragAndDropContext,
-  event: MouseEvent
-) {
+function getDragDistance(context: DragAndDropContext, event: MouseEvent) {
   return {
     x: event.clientX - context.dragStartMousePosition.x,
     y: event.clientY - context.dragStartMousePosition.y,
@@ -34,7 +31,7 @@ function getElementCenter(event: MouseEvent) {
   };
 }
 
-export function getDragTileCenter(event: MouseEvent) {
+function getDragTileCenter(event: MouseEvent) {
   // const { x: dragX, y: dragY } = getDragDistance(context, event);
   const elementCenter = getElementCenter(event);
   return {
@@ -43,10 +40,7 @@ export function getDragTileCenter(event: MouseEvent) {
   };
 }
 
-export function getDropTileIndex(
-  context: DragAndDropContext,
-  event: MouseEvent
-) {
+function getDropTileIndex(context: DragAndDropContext, event: MouseEvent) {
   const tile = event.target as HTMLDivElement;
   const siblings = [...(tile.parentNode?.children || [])] as HTMLDivElement[];
   const dropTargetBounds = siblings.map((sibling) =>
