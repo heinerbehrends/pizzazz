@@ -28,7 +28,7 @@ export const letterDistributionStd = {
   x: 1,
   q: 1,
   z: 1,
-  8: 2,
+  // 8: 2,
 };
 
 const vowels = ["a", "e", "i", "o", "u"];

@@ -27,7 +27,10 @@ function computeCombinations(string: string) {
   return combine("", string, []);
 }
 
-function findValidWords(letters: string, dict: Record<string, string[]>) {
+export function findValidWords(
+  letters: string,
+  dict: Record<string, string[]>
+) {
   return R.pipe(
     R.map(computeCombinations(letters.toUpperCase()), sortABC),
     R.filter((combination) => combination in dict),
