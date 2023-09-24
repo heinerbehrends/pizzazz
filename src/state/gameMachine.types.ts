@@ -46,7 +46,7 @@ export type ClientToServerMessage =
 export const gameMachineSchema = {
   schema: {
     services: {
-      entryAnimationMachine: {} as {
+      animationMachine: {} as {
         src: () => (callback: ({}) => {}) => void;
         data: {
           letters: string;

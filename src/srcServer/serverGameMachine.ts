@@ -70,12 +70,12 @@ export function serverGameMachine() {
     },
     {
       actions: {
+        reactToClient: sendParent(reactToClient),
         setupNewGame: assign(setNewGame),
         updateTime: assign(countdownTime),
         saveId: assign(saveId),
         saveNameAndId: assign(saveNameAndId),
         removeNameAndId: assign(removeNameAndId),
-        reactToClient: sendParent(reactToClient),
         saveSolution: assign(saveSolution),
         logSolutions: log(
           (context: ServerGameMachineContext) => context.solutions

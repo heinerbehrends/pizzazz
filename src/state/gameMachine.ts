@@ -1,7 +1,7 @@
 import PartySocket from "partysocket";
 import { assign, createMachine } from "xstate";
 import { forwardTo } from "xstate/lib/actions";
-import { entryAnimationMachine } from "./entryAnimationMachine";
+import { animationMachine } from "./animationMachine";
 import { dragAndDropMachine } from "./dragAndDropMachine";
 import { gameDuration } from "../srcServer/serverGameMachine";
 import {
@@ -52,8 +52,8 @@ export function gameMachine(socket: PartySocket) {
         onboarding: {
           invoke: [
             {
-              id: "entryAnimationMachine",
-              src: entryAnimationMachine,
+              id: "animationMachine",
+              src: animationMachine,
               data: {
                 index: 0,
               },
@@ -94,8 +94,8 @@ export function gameMachine(socket: PartySocket) {
         },
         dragAndDrop: {
           invoke: {
-            id: "entryAnimationMachine",
-            src: entryAnimationMachine,
+            id: "animationMachine",
+            src: animationMachine,
             data: {
               index: 0,
             },
@@ -109,7 +109,7 @@ export function gameMachine(socket: PartySocket) {
               actions: ["setValidLengthAndDef"],
             },
             startNewGame: {
-              actions: ["setupNewGame", forwardTo("entryAnimationMachine")],
+              actions: ["setupNewGame", forwardTo("animationMachine")],
             },
             solution: {
               actions: ["sendToServer"],
