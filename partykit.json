@@ -1,5 +1,5 @@
 {
-  "name": "my-cool-partykit-project",
+  "name": "pizzazz-party",
   "main": "server.ts", 
   "vars": {
     "MY_VAR": "my-value" 
