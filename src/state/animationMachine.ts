@@ -1,6 +1,6 @@
 import { assign, createMachine } from "xstate";
 import { sendParent } from "xstate/lib/actions";
-import { StartNewGameMessage } from "../../server.types";
+import { animationMachineSchema } from "./animationMachine.types";
 
 export const animationMachine = createMachine(
   {
@@ -41,28 +41,7 @@ export const animationMachine = createMachine(
     context: {
       index: 0,
     },
-    schema: {
-      actions: {} as
-        | {
-            type: "animate";
-            index: number;
-          }
-        | { type: "updateLetters" }
-        | { type: "resetIndex" },
-      services: {
-        sendUpdateLetters: {} as {
-          src: () => (callback: ({}) => {}) => void;
-          data: null;
-        },
-      },
-      context: {
-        index: 0 as number,
-      },
-      events: {} as
-        | { type: "updateLetters" }
-        | { type: "sendAnimate"; index: number }
-        | StartNewGameMessage,
-    },
+    ...animationMachineSchema,
     tsTypes: {} as import("./animationMachine.typegen").Typegen0,
     predictableActionArguments: true,
   },
