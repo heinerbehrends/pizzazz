@@ -61,4 +61,5 @@ export type ServerGameMachineContext = {
   time: number;
   randomLetters: string;
   players: Record<string, string>;
+  solutions: Record<string, string>;
 };

@@ -14,6 +14,7 @@ import {
   type ServerGameMachineContext,
   type WithConnectionId,
 } from "../../server.types";
+import { SolutionMessage } from "../state/gameMachine.types";
 
 export function retrieveDefinition(letters: string, validWordLength: number) {
   if (validWordLength > 0) {
@@ -77,10 +78,11 @@ export function reactToClient(
   }
 }
 
-export function setRandomLetters(context: ServerGameMachineContext) {
+export function setNewGame(context: ServerGameMachineContext) {
   return {
     ...context,
     time: gameDuration,
+    solutions: {},
     randomLetters: generateRandomLetters(),
   };
 }
@@ -120,5 +122,15 @@ export function removeNameAndId(
   return {
     ...context,
     players: newPlayers,
+  };
+}
+
+export function saveSolution(
+  context: ServerGameMachineContext,
+  event: WithConnectionId<SolutionMessage>
+) {
+  return {
+    ...context,
+    solutions: { ...context.solutions, [event.connectionId]: event.solution },
   };
 }

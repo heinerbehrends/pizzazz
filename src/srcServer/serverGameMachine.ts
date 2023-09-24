@@ -5,7 +5,7 @@ import {
   UserDisconnectedEvent,
   WithConnectionId,
 } from "../../server.types";
-import { sendParent } from "xstate/lib/actions";
+import { log, sendParent } from "xstate/lib/actions";
 import { generateRandomLetters } from "./generateRandomLetters";
 import {
   countdownTime,
@@ -13,7 +13,8 @@ import {
   removeNameAndId,
   saveId,
   saveNameAndId,
-  setRandomLetters,
+  saveSolution,
+  setNewGame,
 } from "./serverGameMachine.functions";
 
 export const gameDuration = 50;
@@ -32,7 +33,7 @@ export function serverGameMachine() {
             },
           },
           always: {
-            actions: ["newRandomLetters", "reactToClient"],
+            actions: ["setupNewGame", "reactToClient"],
             cond: "isTimeOver",
           },
 
@@ -50,7 +51,7 @@ export function serverGameMachine() {
               actions: ["reactToClient"],
             },
             solution: {
-              actions: ["reactToClient"],
+              actions: ["reactToClient", "saveSolution", "logSolutions"],
             },
           },
         },
@@ -59,6 +60,7 @@ export function serverGameMachine() {
         time: gameDuration,
         randomLetters: generateRandomLetters(),
         players: {},
+        solutions: {},
       },
       schema: {
         events: {} as
@@ -68,15 +70,18 @@ export function serverGameMachine() {
           | ClientToServerMessageWithId,
         actions: {} as
           | { type: "updateTime" }
-          | { type: "newRandomLetters" }
+          | { type: "setupNewGame" }
           | { type: "reactToClient" }
           | { type: "removeNameAndId" }
           | { type: "saveNameAndId" }
-          | { type: "saveId" },
+          | { type: "saveId" }
+          | { type: "saveSolution" }
+          | { type: "logSolutions" },
         context: {
           time: 50 as number,
           randomLetters: "" as string,
           players: {} as Record<string, string>,
+          solutions: {} as Record<string, string>,
         },
       },
       predictableActionArguments: true,
@@ -84,12 +89,16 @@ export function serverGameMachine() {
     },
     {
       actions: {
-        newRandomLetters: assign(setRandomLetters),
+        setupNewGame: assign(setNewGame),
         updateTime: assign(countdownTime),
         saveId: assign(saveId),
         saveNameAndId: assign(saveNameAndId),
         removeNameAndId: assign(removeNameAndId),
         reactToClient: sendParent(reactToClient),
+        saveSolution: assign(saveSolution),
+        logSolutions: log(
+          (context: ServerGameMachineContext) => context.solutions
+        ),
       },
       guards: {
         isTimeOver: (context: ServerGameMachineContext) => context.time === -1,
