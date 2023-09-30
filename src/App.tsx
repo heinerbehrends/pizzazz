@@ -22,7 +22,7 @@ const letterIds = [
   "fourth",
   "fifth",
   "sixth",
-];
+] as const;
 
 const mainContainerStyles = css({
   maxWidth: "500px",

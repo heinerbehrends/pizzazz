@@ -42,8 +42,8 @@ export default {
       ) {
         return;
       }
-      const event = evt as ServerToClientMessage;
-      room.broadcast(JSON.stringify(event), event?.excludedPlayers);
+      const { excludedPlayers, ...event } = evt as ServerToClientMessage;
+      room.broadcast(JSON.stringify(event), excludedPlayers);
     });
 
     connection.addEventListener("close", () => {

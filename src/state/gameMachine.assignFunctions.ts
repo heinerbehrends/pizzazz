@@ -49,16 +49,16 @@ export function updateLetters(
   };
 }
 
-function getDefinition(context: GameMachineContext, event: DefinitionMessage) {
-  const isValid = context.validWordLength > 0;
-  if (event.definition) {
-    return event.definition;
-  }
-  if (isValid) {
-    return "no definition found";
-  }
-  return "find a valid word";
-}
+// function getDefinition(context: GameMachineContext, event: DefinitionMessage) {
+//   const isValid = context.validWordLength > 0;
+//   if (event.definition) {
+//     return event.definition;
+//   }
+//   if (isValid) {
+//     return "no definition found";
+//   }
+//   return "find a valid word";
+// }
 
 export function setDefinition(
   context: GameMachineContext,
@@ -67,7 +67,7 @@ export function setDefinition(
   console.log("setDefinition event: ", event);
   return {
     ...context,
-    definition: getDefinition(context, event),
+    definition: event.definition,
   };
 }
 
