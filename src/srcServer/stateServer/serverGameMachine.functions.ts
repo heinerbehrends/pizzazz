@@ -12,6 +12,7 @@ import {
   type SendToParentEvent,
   type WithConnectionId,
   type UserDisconnectedEvent,
+  type NewPlayerEvent,
 } from "../../../server.types";
 import { SolutionMessage } from "../../state/gameMachine.types";
 
@@ -35,7 +36,6 @@ export function reactToClient(
       } satisfies TimeAndLettersReply;
 
     case "getDefinition":
-      console.log("updateLetters event letters: ", event.letters);
       return {
         type: "definition",
         definition: retrieveDefinition(event.letters),
@@ -45,7 +45,6 @@ export function reactToClient(
       } satisfies DefinitionMessage;
 
     case "solution":
-      console.log(context.players);
       return {
         type: "playerSolution",
         name: context.players[event.connectionId],
@@ -98,7 +97,7 @@ export function saveNameAndId(
 }
 export function saveId(
   context: ServerGameMachineContext,
-  event: WithConnectionId<{ type: "newPlayer" }>
+  event: WithConnectionId<NewPlayerEvent>
 ): ServerGameMachineContext {
   return {
     ...context,
@@ -108,10 +107,9 @@ export function saveId(
 
 export function removeNameAndId(
   context: ServerGameMachineContext,
-  event: UserDisconnectedEvent
+  event: WithConnectionId<UserDisconnectedEvent>
 ): ServerGameMachineContext {
   const { [event.connectionId]: removedName, ...newPlayers } = context.players;
-  console.log(newPlayers);
   return {
     ...context,
     players: newPlayers,

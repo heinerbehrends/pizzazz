@@ -6,6 +6,7 @@ import {
   ClientToServerMessage,
   SolutionMessage,
 } from "./src/state/gameMachine.types";
+import { ScreenNameMessage } from "./src/components/Buttons";
 
 const serverService = interpret(serverMachine()).start();
 
@@ -21,7 +22,7 @@ export default {
         return;
       }
       const message: ClientToServerMessage = JSON.parse(event.data);
-      console.log("clientToServerMessage: ", message.type);
+      console.log("clientToServerMessage: ", message);
       serverService.send({ ...message, connectionId: connection.id });
     });
 
@@ -35,8 +36,11 @@ export default {
             "firstUserConnected",
             "userDisconnected",
             "lastUserDisconnected",
+            "screenName",
           ] satisfies Array<
-            ServerConnectionEvent["type"] | SolutionMessage["type"]
+            | ServerConnectionEvent["type"]
+            | SolutionMessage["type"]
+            | ScreenNameMessage["type"]
           >
         ).includes(evt.type as ServerConnectionEvent["type"])
       ) {

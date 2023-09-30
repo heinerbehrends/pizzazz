@@ -49,17 +49,6 @@ export function updateLetters(
   };
 }
 
-// function getDefinition(context: GameMachineContext, event: DefinitionMessage) {
-//   const isValid = context.validWordLength > 0;
-//   if (event.definition) {
-//     return event.definition;
-//   }
-//   if (isValid) {
-//     return "no definition found";
-//   }
-//   return "find a valid word";
-// }
-
 export function setDefinition(
   context: GameMachineContext,
   event: DefinitionMessage
@@ -106,6 +95,7 @@ export function setupWaitingGame(
     ...context,
     message: `A new game will start in ${event.time} seconds`,
     validWordLength: 0,
+    validWords: event.validWords,
     lettersStatic: event.letters,
     time: event.time,
   };
@@ -128,7 +118,7 @@ export function setupNewGame(
 }
 export function setupJoinGame(
   context: GameMachineContext,
-  event: StartNewGameMessage | TimeAndLettersReply
+  event: { type: "joinGame" }
 ): GameMachineContext {
   console.log("Hello from setupNewGame: ", event);
   return {

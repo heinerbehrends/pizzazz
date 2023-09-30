@@ -12,13 +12,6 @@ export type LetterDroppedEvent = {
   dropIndex: number;
 };
 
-// export type StartGameMessage = {
-//   type: "startGame";
-//   time: number;
-//   letters: string;
-//   validWords: string[];
-// };
-
 type WaitMessage = {
   type: "wait";
   time: number;
@@ -80,7 +73,7 @@ export const gameMachineSchema = {
       lettersStatic: "pizzazz" as string,
       validWordLength: 0 as number,
       message: "" as string,
-      definition: "" as string,
+      definition: "" as string | null,
       time: 50 as number,
       name: "" as string,
       validWords: [] as string[],

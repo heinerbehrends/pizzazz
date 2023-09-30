@@ -32,16 +32,17 @@ export type PlayerSolutionMessage = {
 
 export type UserDisconnectedEvent = {
   type: "userDisconnected";
-  connectionId: string;
+};
+
+export type NewPlayerEvent = {
+  type: "newPlayer";
 };
 
 export type ServerConnectionEvent =
-  | UserDisconnectedEvent
   | { type: "firstUserConnected" }
   | { type: "lastUserDisconnected" }
-  | { type: "newPlayer"; connectionId: string };
-
-type NewPlayerEvent = { type: "newPlayer"; name: string };
+  | WithConnectionId<UserDisconnectedEvent>
+  | WithConnectionId<NewPlayerEvent>;
 
 export type ServerToClientMessage =
   | DefinitionMessage
@@ -69,7 +70,7 @@ export const serverGameMachineSchema = {
   schema: {
     events: {} as
       | { type: "updateTime" }
-      | WithConnectionId<{ type: "newPlayer" }>
+      | WithConnectionId<NewPlayerEvent>
       | ServerConnectionEvent
       | ClientToServerMessageWithId,
     actions: {} as

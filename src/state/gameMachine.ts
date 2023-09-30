@@ -24,7 +24,7 @@ export type GameMachineContext = {
   lettersStatic: string;
   validWordLength: number;
   message: string;
-  definition: string;
+  definition: string | null;
   time: number;
   name: string;
   validWords: string[];
@@ -51,20 +51,6 @@ export function gameMachine(socket: PartySocket) {
         },
       ],
       states: {
-        // todo: move animations to own state, add transitions
-        // animating: {
-        //   id: "animating",
-        //   invoke: [
-        //     {
-        //       id: "animationMachine",
-        //       src: animationMachine,
-        //       data: {
-        //         index: 0,
-        //       },
-        //     },
-        //   ],
-        //   on: { animate: { actions: ["showNextFrame"] } },
-        // },
         onboarding: {
           invoke: [
             {
@@ -176,8 +162,8 @@ export function gameMachine(socket: PartySocket) {
         displaySolution: assign(displaySolution),
       },
       guards: {
-        isLittleTimeLeft: (_, event: TimeAndLettersReply) => event.time <= 10,
-        isEnoughTimeLeft: (_, event: TimeAndLettersReply) => event.time > 10,
+        isLittleTimeLeft: (_, event: TimeAndLettersReply) => event.time < 40,
+        isEnoughTimeLeft: (_, event: TimeAndLettersReply) => event.time > 40,
       },
       services: {
         // subscribe to messages from the server
