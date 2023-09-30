@@ -43,19 +43,32 @@ export function findValidWords(
 }
 
 function stringToPossibleWords(string: string) {
+  console.log(
+    "stringToPossibleWords: ",
+    Array(string.length - 1)
+      .fill(null)
+      .map((_, index) => string.substring(0, string.length - index))
+  );
   return Array(string.length - 1)
     .fill(null)
     .map((_, index) => string.substring(0, string.length - index));
 }
 
-export function getValidWordLength(string: string) {
+export function getValidWordLength(string: string, validWords: string[]) {
   return (
     R.pipe(
       string.toUpperCase(),
       (string) => stringToPossibleWords(string),
-      R.find((string) =>
-        findValidWords(string, dictWithSortedKeys).includes(string)
-      )
-    )?.length || 0
+      R.find((string) => {
+        console.log("getValidWordLength, string: ", string);
+        console.log("getValidWordLength, validWords: ", validWords);
+        console.log("in a valid word: ", validWords.includes(string));
+        return validWords.includes(string);
+      }),
+      (string) => {
+        console.log("getValidWordLength, valid string: ", string);
+        return string;
+      }
+    )?.length ?? 0
   );
 }

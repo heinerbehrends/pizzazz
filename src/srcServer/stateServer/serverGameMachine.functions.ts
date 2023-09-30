@@ -1,4 +1,4 @@
-import { getValidWordLength, findValidWords } from "./findValidWords";
+import { findValidWords } from "./findValidWords";
 import { generateRandomLetters } from "./generateRandomLetters";
 import { ServerGameMachineContext, gameDuration } from "./serverGameMachine";
 import dictionary from "./dictionary.json";
@@ -6,26 +6,17 @@ import dictWithSortedKeys from "./associative.json";
 import { type ScreenNameMessage } from "../../components/Buttons";
 import {
   type TimeAndLettersReply,
-  type ValidLengthAndDefMessage,
+  type DefinitionMessage,
   type PlayerSolutionMessage,
   type StartNewGameMessage,
-  type UserDisconnectedEvent,
   type SendToParentEvent,
   type WithConnectionId,
+  type UserDisconnectedEvent,
 } from "../../../server.types";
 import { SolutionMessage } from "../../state/gameMachine.types";
 
-function retrieveDefinition(letters: string, validWordLength: number) {
-  if (validWordLength > 0) {
-    return (
-      dictionary?.[
-        letters
-          .substring(0, validWordLength)
-          .toUpperCase() as keyof typeof dictionary
-      ] || null
-    );
-  }
-  return null;
+function retrieveDefinition(letters: string) {
+  return dictionary?.[letters.toUpperCase() as keyof typeof dictionary] || null;
 }
 export function reactToClient(
   context: ServerGameMachineContext,
@@ -43,16 +34,15 @@ export function reactToClient(
         ),
       } satisfies TimeAndLettersReply;
 
-    case "updateLetters":
-      const validWordLength = getValidWordLength(event.letters);
+    case "getDefinition":
+      console.log("updateLetters event letters: ", event.letters);
       return {
-        type: "validLengthAndDef",
-        length: validWordLength,
-        definition: retrieveDefinition(event.letters, validWordLength),
+        type: "definition",
+        definition: retrieveDefinition(event.letters),
         excludedPlayers: Object.keys(context.players).filter(
           (id) => id !== event.connectionId
         ),
-      } satisfies ValidLengthAndDefMessage;
+      } satisfies DefinitionMessage;
 
     case "solution":
       console.log(context.players);
@@ -65,29 +55,32 @@ export function reactToClient(
       } satisfies PlayerSolutionMessage;
 
     case "":
-      const validWords = findValidWords(
-        context.randomLetters,
-        dictWithSortedKeys
-      );
       return {
         type: "startNewGame",
         letters: context.randomLetters,
         time: context.time,
-        validWords,
+        validWords: context.validWords,
       } satisfies StartNewGameMessage;
   }
 }
 
-export function setNewGame(context: ServerGameMachineContext) {
+export function setNewGame(
+  context: ServerGameMachineContext
+): ServerGameMachineContext {
+  const randomLetters = generateRandomLetters();
+  const validWords = findValidWords(randomLetters, dictWithSortedKeys);
   return {
     ...context,
     time: gameDuration,
     solutions: {},
-    randomLetters: generateRandomLetters(),
+    randomLetters: randomLetters,
+    validWords,
   };
 }
 
-export function countdownTime(context: ServerGameMachineContext) {
+export function countdownTime(
+  context: ServerGameMachineContext
+): ServerGameMachineContext {
   return {
     ...context,
     time: context.time - 1,
@@ -97,7 +90,7 @@ export function countdownTime(context: ServerGameMachineContext) {
 export function saveNameAndId(
   context: ServerGameMachineContext,
   event: WithConnectionId<ScreenNameMessage>
-) {
+): ServerGameMachineContext {
   return {
     ...context,
     players: { ...context.players, [event.connectionId]: event.name },
@@ -106,7 +99,7 @@ export function saveNameAndId(
 export function saveId(
   context: ServerGameMachineContext,
   event: WithConnectionId<{ type: "newPlayer" }>
-) {
+): ServerGameMachineContext {
   return {
     ...context,
     players: { ...context.players, [event.connectionId]: "" },
@@ -116,7 +109,7 @@ export function saveId(
 export function removeNameAndId(
   context: ServerGameMachineContext,
   event: UserDisconnectedEvent
-) {
+): ServerGameMachineContext {
   const { [event.connectionId]: removedName, ...newPlayers } = context.players;
   console.log(newPlayers);
   return {
@@ -128,7 +121,7 @@ export function removeNameAndId(
 export function saveSolution(
   context: ServerGameMachineContext,
   event: WithConnectionId<SolutionMessage>
-) {
+): ServerGameMachineContext {
   return {
     ...context,
     solutions: { ...context.solutions, [event.connectionId]: event.solution },

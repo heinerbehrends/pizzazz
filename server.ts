@@ -1,8 +1,11 @@
 import type { PartyKitServer } from "partykit/server";
 import { interpret } from "xstate";
 import { serverMachine } from "./src/srcServer/stateServer/serverMachine";
-import { ServerToClientMessage, UserDisconnectedEvent } from "./server.types";
-import { ClientToServerMessage } from "./src/state/gameMachine.types";
+import { ServerToClientMessage, ServerConnectionEvent } from "./server.types";
+import {
+  ClientToServerMessage,
+  SolutionMessage,
+} from "./src/state/gameMachine.types";
 
 const serverService = interpret(serverMachine()).start();
 
@@ -24,7 +27,19 @@ export default {
 
     // send machine events to the client
     serverService.onEvent((evt) => {
-      if (evt.type === "solution") {
+      if (
+        (
+          [
+            "solution",
+            "newPlayer",
+            "firstUserConnected",
+            "userDisconnected",
+            "lastUserDisconnected",
+          ] satisfies Array<
+            ServerConnectionEvent["type"] | SolutionMessage["type"]
+          >
+        ).includes(evt.type as ServerConnectionEvent["type"])
+      ) {
         return;
       }
       const event = evt as ServerToClientMessage;
@@ -38,7 +53,7 @@ export default {
       serverService.send({
         type: "userDisconnected",
         connectionId: connection.id,
-      } satisfies UserDisconnectedEvent);
+      } satisfies ServerConnectionEvent);
     });
   },
 } satisfies PartyKitServer;

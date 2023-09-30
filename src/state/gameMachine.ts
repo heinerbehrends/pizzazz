@@ -7,14 +7,15 @@ import {
   countdownUpdateTime,
   updateLetters,
   showNextFrame,
-  updateValidLengthAndDef,
+  setDefinition,
   setTimeAndLetters,
   setupNewGame,
   setupJoinGame,
   setupWaitingGame,
   displaySolution,
+  setValidLength,
 } from "./gameMachine.assignFunctions";
-import { gameMachineSchema } from "./gameMachine.types";
+import { GetDefinitionMessage, gameMachineSchema } from "./gameMachine.types";
 import { gameDuration } from "../srcServer/stateServer/serverGameMachine";
 import { type TimeAndLettersReply } from "../../server.types";
 
@@ -50,6 +51,20 @@ export function gameMachine(socket: PartySocket) {
         },
       ],
       states: {
+        // todo: move animations to own state, add transitions
+        // animating: {
+        //   id: "animating",
+        //   invoke: [
+        //     {
+        //       id: "animationMachine",
+        //       src: animationMachine,
+        //       data: {
+        //         index: 0,
+        //       },
+        //     },
+        //   ],
+        //   on: { animate: { actions: ["showNextFrame"] } },
+        // },
         onboarding: {
           invoke: [
             {
@@ -66,14 +81,14 @@ export function gameMachine(socket: PartySocket) {
             },
             timeAndLettersReply: [
               {
-                target: "waiting",
-                actions: ["setupWaitingGame"],
-                cond: "isLittleTimeLeft",
-              },
-              {
                 target: "dragAndDrop",
                 actions: ["setupGame"],
                 cond: "isEnoughTimeLeft",
+              },
+              {
+                target: "waiting",
+                actions: ["setupWaitingGame"],
+                cond: "isLittleTimeLeft",
               },
             ],
           },
@@ -104,10 +119,10 @@ export function gameMachine(socket: PartySocket) {
           on: {
             animate: { actions: ["showNextFrame"] },
             letterDropped: {
-              actions: ["updateLetters", "sendLettersToServer"],
+              actions: ["updateLetters", "setValidLength", "requestDefintion"],
             },
-            validLengthAndDef: {
-              actions: ["setValidLengthAndDef"],
+            definition: {
+              actions: ["setDefinition"],
             },
             startNewGame: {
               actions: ["setupNewGame", forwardTo("animationMachine")],
@@ -140,15 +155,20 @@ export function gameMachine(socket: PartySocket) {
         sendToServer: (_, event) => {
           socket.send(JSON.stringify(event));
         },
-        sendLettersToServer: (context) => {
+        requestDefintion: (context) => {
           socket.send(
-            JSON.stringify({ type: "updateLetters", letters: context.letters })
+            JSON.stringify({
+              type: "getDefinition",
+              letters: context.letters.substring(0, context.validWordLength),
+            } as GetDefinitionMessage)
           );
         },
+        // todo: create reducer functions for each state property state describe how they change with events
         countdown: assign(countdownUpdateTime),
         updateLetters: assign(updateLetters),
         showNextFrame: assign(showNextFrame),
-        setValidLengthAndDef: assign(updateValidLengthAndDef),
+        setDefinition: assign(setDefinition),
+        setValidLength: assign(setValidLength),
         setupGame: assign(setTimeAndLetters),
         setupNewGame: assign(setupNewGame),
         setupJoinGame: assign(setupJoinGame),
@@ -156,11 +176,11 @@ export function gameMachine(socket: PartySocket) {
         displaySolution: assign(displaySolution),
       },
       guards: {
-        isLittleTimeLeft: (_, event: TimeAndLettersReply) => event.time > 0,
-        isEnoughTimeLeft: (_, event: TimeAndLettersReply) => event.time > 20,
+        isLittleTimeLeft: (_, event: TimeAndLettersReply) => event.time <= 10,
+        isEnoughTimeLeft: (_, event: TimeAndLettersReply) => event.time > 10,
       },
       services: {
-        // subscribe to messages from the
+        // subscribe to messages from the server
         socketCallback: () => (callback) => {
           socket.addEventListener("message", (event) => {
             console.log("message from server: ", event.data);

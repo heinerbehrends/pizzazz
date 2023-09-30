@@ -1,6 +1,6 @@
 import * as R from "remeda";
 import {
-  type ValidLengthAndDefMessage,
+  type DefinitionMessage,
   type StartNewGameMessage,
   type TimeAndLettersReply,
   type PlayerSolutionMessage,
@@ -8,11 +8,11 @@ import {
 import {
   type AnimateEvent,
   type LetterDroppedEvent,
-  type StartGameMessage,
 } from "./gameMachine.types";
 import { swapLetters } from "./dragAndDropMachine.functions";
 import { GameMachineContext, getRandomAbc } from "./gameMachine";
 import { gameDuration } from "../srcServer/stateServer/serverGameMachine";
+import { getValidWordLength } from "../srcServer/stateServer/findValidWords";
 
 export function showNextFrame(
   context: GameMachineContext,
@@ -49,36 +49,51 @@ export function updateLetters(
   };
 }
 
-export function updateValidLengthAndDef(
-  context: GameMachineContext,
-  event: ValidLengthAndDefMessage
-) {
-  function getDefinition(event: ValidLengthAndDefMessage) {
-    const isValid = event.length > 0;
-    if (event.definition) {
-      return event.definition;
-    }
-    if (isValid) {
-      return "no definition found";
-    }
-    return "find a valid word";
+function getDefinition(context: GameMachineContext, event: DefinitionMessage) {
+  const isValid = context.validWordLength > 0;
+  if (event.definition) {
+    return event.definition;
   }
+  if (isValid) {
+    return "no definition found";
+  }
+  return "find a valid word";
+}
+
+export function setDefinition(
+  context: GameMachineContext,
+  event: DefinitionMessage
+) {
+  console.log("setDefinition event: ", event);
   return {
     ...context,
-    validWordLength: event.length,
-    definition: getDefinition(event),
+    definition: getDefinition(context, event),
+  };
+}
+
+export function setValidLength(
+  context: GameMachineContext
+): GameMachineContext {
+  const validWordLength = getValidWordLength(
+    context.letters,
+    context.validWords
+  );
+  return {
+    ...context,
+    validWordLength,
   };
 }
 
 export function setTimeAndLetters(
   context: GameMachineContext,
-  event: StartGameMessage
+  event: TimeAndLettersReply
 ): GameMachineContext {
   console.log("setTimeAndLetters event: ", event);
   return {
     ...context,
     time: event.time,
     lettersStatic: event.letters,
+    validWords: event.validWords,
   };
 }
 

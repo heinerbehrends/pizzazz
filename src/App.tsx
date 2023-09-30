@@ -6,6 +6,7 @@ import {
   GlobalStateContext,
   GlobalStateProvider,
 } from "./state/contextProvider";
+// cspell:disable-next-line
 import { Message } from "./components/Messsage";
 import { ScreenNameInput } from "./components/ScreenNameInput";
 import { Definition } from "./components/Definitions";

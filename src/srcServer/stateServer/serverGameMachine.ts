@@ -1,6 +1,6 @@
 import { assign, createMachine } from "xstate";
 import { serverGameMachineSchema } from "../../../server.types";
-import { log, sendParent } from "xstate/lib/actions";
+import { choose, log, sendParent } from "xstate/lib/actions";
 import { generateRandomLetters } from "./generateRandomLetters";
 import {
   countdownTime,
@@ -45,12 +45,16 @@ export function serverGameMachine() {
               actions: ["saveId"],
             },
             screenName: {
-              actions: ["reactToClient", "saveNameAndId"],
+              actions: [
+                choose([{ cond: "isFirstPlayer", actions: ["setupNewGame"] }]),
+                "reactToClient",
+                "saveNameAndId",
+              ],
             },
             userDisconnected: {
               actions: ["removeNameAndId"],
             },
-            updateLetters: {
+            getDefinition: {
               actions: ["reactToClient"],
             },
             solution: {
@@ -85,6 +89,8 @@ export function serverGameMachine() {
       },
       guards: {
         isTimeOver: (context: ServerGameMachineContext) => context.time === -1,
+        isFirstPlayer: (context: ServerGameMachineContext) =>
+          Object.keys(context.players).length === 0,
       },
     }
   );

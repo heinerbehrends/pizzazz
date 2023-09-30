@@ -1,8 +1,7 @@
 import { ClientToServerMessage } from "./src/state/gameMachine.types";
 
-export type ValidLengthAndDefMessage = {
-  type: "validLengthAndDef";
-  length: number;
+export type DefinitionMessage = {
+  type: "definition";
   definition: string | null;
   excludedPlayers?: string[];
 };
@@ -36,8 +35,16 @@ export type UserDisconnectedEvent = {
   connectionId: string;
 };
 
+export type ServerConnectionEvent =
+  | UserDisconnectedEvent
+  | { type: "firstUserConnected" }
+  | { type: "lastUserDisconnected" }
+  | { type: "newPlayer"; connectionId: string };
+
+type NewPlayerEvent = { type: "newPlayer"; name: string };
+
 export type ServerToClientMessage =
-  | ValidLengthAndDefMessage
+  | DefinitionMessage
   | TimeAndLettersReply
   | StartNewGameMessage
   | PlayerSolutionMessage;
@@ -63,7 +70,7 @@ export const serverGameMachineSchema = {
     events: {} as
       | { type: "updateTime" }
       | WithConnectionId<{ type: "newPlayer" }>
-      | UserDisconnectedEvent
+      | ServerConnectionEvent
       | ClientToServerMessageWithId,
     actions: {} as
       | { type: "updateTime" }
@@ -88,10 +95,8 @@ export const serverMachineSchema = {
   schema: {
     context: {} as { value: string },
     events: {} as
-      | { type: "firstUserConnected" }
-      | { type: "lastUserDisconnected" }
-      | WithConnectionId<{ type: "newPlayer" }>
-      | UserDisconnectedEvent
+      | WithConnectionId<NewPlayerEvent>
+      | ServerConnectionEvent
       | WithConnectionId<TimeAndLettersReply>
       | ClientToServerMessageWithId,
   },

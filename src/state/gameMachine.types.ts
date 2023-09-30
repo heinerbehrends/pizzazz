@@ -1,8 +1,8 @@
 import { ServerToClientMessage } from "../../server.types";
 import { ScreenNameMessage } from "../components/Buttons";
 
-type UpdateLettersMessage = {
-  type: "updateLetters";
+export type GetDefinitionMessage = {
+  type: "getDefinition";
   letters: string;
 };
 
@@ -12,11 +12,12 @@ export type LetterDroppedEvent = {
   dropIndex: number;
 };
 
-export type StartGameMessage = {
-  type: "startGame";
-  time: number;
-  letters: string;
-};
+// export type StartGameMessage = {
+//   type: "startGame";
+//   time: number;
+//   letters: string;
+//   validWords: string[];
+// };
 
 type WaitMessage = {
   type: "wait";
@@ -39,7 +40,7 @@ export type SolutionMessage = {
 };
 
 export type ClientToServerMessage =
-  | UpdateLettersMessage
+  | GetDefinitionMessage
   | ScreenNameMessage
   | SolutionMessage;
 
@@ -70,7 +71,9 @@ export const gameMachineSchema = {
       | { type: "countdown" }
       | { type: "setupJoinGame" }
       | { type: "setupWaitingGame" }
-      | { type: "displaySolution" },
+      | { type: "displaySolution" }
+      | { type: "setDefinition" }
+      | { type: "setValidLength" },
 
     context: {
       letters: "pizzazz" as string,
@@ -85,7 +88,6 @@ export const gameMachineSchema = {
     events: {} as
       | ServerToClientMessage
       | ClientToServerMessage
-      | StartGameMessage
       | WaitMessage
       | LetterDroppedEvent
       | { type: "animate"; index: number }
