@@ -139,6 +139,7 @@ export function gameMachine(socket: PartySocket) {
     {
       actions: {
         sendToServer: (_, event) => {
+          console.log("sending to server: ", event);
           socket.send(JSON.stringify(event));
         },
         requestDefintion: (context) => {

@@ -1,4 +1,4 @@
-import { createMachine } from "xstate";
+import { createMachine, forwardTo } from "xstate";
 import { serverGameMachine } from "./serverGameMachine";
 import { serverMachineSchema } from "../../../server.types";
 
@@ -15,6 +15,7 @@ export function serverMachine() {
         },
       },
       connected: {
+        entry: forwardTo("serverGameMachine"),
         invoke: [
           {
             id: "serverGameMachine",

@@ -12,9 +12,13 @@ const serverService = interpret(serverMachine()).start();
 
 export default {
   async onConnect(connection, room) {
-    serverService.send({ type: "newPlayer", connectionId: connection.id });
     if ([...room.getConnections()].length === 1) {
-      serverService.send({ type: "firstUserConnected" });
+      serverService.send({
+        type: "firstUserConnected",
+        connectionId: connection.id,
+      });
+    } else {
+      serverService.send({ type: "newPlayer", connectionId: connection.id });
     }
     // listen for client messages
     connection.addEventListener("message", (event) => {
@@ -46,6 +50,7 @@ export default {
       ) {
         return;
       }
+      console.log("serverToClientMessage: ", evt);
       const { excludedPlayers, ...event } = evt as ServerToClientMessage;
       room.broadcast(JSON.stringify(event), excludedPlayers);
     });

@@ -41,6 +41,9 @@ export function serverGameMachine() {
           },
 
           on: {
+            firstUserConnected: {
+              actions: ["saveId"],
+            },
             newPlayer: {
               actions: ["saveId"],
             },

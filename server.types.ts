@@ -39,7 +39,7 @@ export type NewPlayerEvent = {
 };
 
 export type ServerConnectionEvent =
-  | { type: "firstUserConnected" }
+  | WithConnectionId<{ type: "firstUserConnected" }>
   | { type: "lastUserDisconnected" }
   | WithConnectionId<UserDisconnectedEvent>
   | WithConnectionId<NewPlayerEvent>;
