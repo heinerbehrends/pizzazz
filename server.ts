@@ -1,12 +1,15 @@
 import type { PartyKitServer } from "partykit/server";
 import { interpret } from "xstate";
 import { serverMachine } from "./src/srcServer/stateServer/serverMachine";
-import { ServerToClientMessage, ServerConnectionEvent } from "./server.types";
-import {
+import type {
+  ServerToClientMessage,
+  ServerConnectionEvent,
+} from "./server.types";
+import type {
   ClientToServerMessage,
   SolutionMessage,
 } from "./src/state/gameMachine.types";
-import { ScreenNameMessage } from "./src/components/Buttons";
+import type { ScreenNameMessage } from "./src/components/Buttons";
 
 const serverService = interpret(serverMachine()).start();
 

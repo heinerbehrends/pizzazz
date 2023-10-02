@@ -1,8 +1,9 @@
-import { findValidWords } from "./findValidWords";
+import {
+  findValidWords,
+  retrieveDefinition,
+} from "./findValidWordsAndDefinitions";
 import { generateRandomLetters } from "./generateRandomLetters";
 import { ServerGameMachineContext, gameDuration } from "./serverGameMachine";
-import dictionary from "./dictionary.json";
-import dictWithSortedKeys from "./associative.json";
 import { type ScreenNameMessage } from "../../components/Buttons";
 import {
   type TimeAndLettersReply,
@@ -14,11 +15,8 @@ import {
   type UserDisconnectedEvent,
   type NewPlayerEvent,
 } from "../../../server.types";
-import { SolutionMessage } from "../../state/gameMachine.types";
+import type { SolutionMessage } from "../../state/gameMachine.types";
 
-function retrieveDefinition(letters: string) {
-  return dictionary?.[letters.toUpperCase() as keyof typeof dictionary] || null;
-}
 export function reactToClient(
   context: ServerGameMachineContext,
   event: SendToParentEvent
@@ -36,6 +34,7 @@ export function reactToClient(
       } satisfies TimeAndLettersReply;
 
     case "getDefinition":
+      console.log("getDefinition letters: ", event.letters);
       return {
         type: "definition",
         definition: retrieveDefinition(event.letters),
@@ -67,7 +66,7 @@ export function setNewGame(
   context: ServerGameMachineContext
 ): ServerGameMachineContext {
   const randomLetters = generateRandomLetters();
-  const validWords = findValidWords(randomLetters, dictWithSortedKeys);
+  const validWords = findValidWords(randomLetters);
   return {
     ...context,
     time: gameDuration,

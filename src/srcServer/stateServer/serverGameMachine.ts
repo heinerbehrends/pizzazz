@@ -12,7 +12,7 @@ import {
   setNewGame,
 } from "./serverGameMachine.functions";
 
-export const gameDuration = 50;
+export const gameDuration = 20;
 
 export type ServerGameMachineContext = {
   time: number;

@@ -84,24 +84,21 @@ function hasTwoWildcards(randomLetters: string[]) {
   );
 }
 
-function replaceWildcard(randomLetters: string[]) {
-  if (hasTwoWildcards(randomLetters))
-    return randomLetters
-      .join("")
-      .replace(
-        "8",
-        grabRandom(R.reject(bagOfLetters as any, (el) => el === "8"))
-      )
-      .split("");
+function limitToOneWildcard(randomLetters: string) {
+  if (hasTwoWildcards(randomLetters.split("")))
+    return randomLetters.replace(
+      "8",
+      grabRandom(R.reject(bagOfLetters as any, (el) => el === "8"))
+    );
   return randomLetters;
 }
 
-export function generateRandomLetters() {
+export function generateRandomLetters(): string {
   return R.pipe(
     Array(7),
     R.map.indexed(grabTwoOrThreeVowels),
     R.shuffle(),
-    replaceWildcard,
-    R.join("")
+    R.join(""),
+    limitToOneWildcard
   );
 }

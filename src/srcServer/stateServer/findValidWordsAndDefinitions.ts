@@ -1,5 +1,5 @@
 import * as R from "remeda";
-import dictWithSortedKeys from "./associative.json";
+import dictionary from "./dictionaryWithOrderedKeys.json";
 
 export function sortABC(word: string) {
   return R.pipe(
@@ -27,28 +27,21 @@ function computeCombinations(string: string) {
   return combine("", string, []);
 }
 
-export function findValidWords(
-  letters: string,
-  dict: Record<string, string[]>
-) {
-  return R.pipe(
-    R.map(computeCombinations(letters.toUpperCase()), sortABC),
-    R.filter((combination) => combination in dict),
-    R.map(
-      (validSorted) =>
-        dictWithSortedKeys[validSorted as keyof typeof dictWithSortedKeys]
-    ),
-    R.flatten()
-  );
+function createFindValidWords(dictionary: DictionaryType) {
+  return (letters: string) => {
+    return R.pipe(
+      computeCombinations(letters.toUpperCase()),
+      R.map((combination) => [sortABC(combination), combination]),
+      R.filter((combinationTuple) => combinationTuple[0] in dictionary),
+      R.map((validCombinationTuple) => validCombinationTuple[1]),
+      R.flatten()
+    );
+  };
 }
 
+export const findValidWords = createFindValidWords(dictionary);
+
 function stringToPossibleWords(string: string) {
-  console.log(
-    "stringToPossibleWords: ",
-    Array(string.length - 1)
-      .fill(null)
-      .map((_, index) => string.substring(0, string.length - index))
-  );
   return Array(string.length - 1)
     .fill(null)
     .map((_, index) => string.substring(0, string.length - index));
@@ -59,16 +52,21 @@ export function getValidWordLength(string: string, validWords: string[]) {
     R.pipe(
       string.toUpperCase(),
       (string) => stringToPossibleWords(string),
-      R.find((string) => {
-        console.log("getValidWordLength, string: ", string);
-        console.log("getValidWordLength, validWords: ", validWords);
-        console.log("in a valid word: ", validWords.includes(string));
-        return validWords.includes(string);
-      }),
-      (string) => {
-        console.log("getValidWordLength, valid string: ", string);
-        return string;
-      }
+      R.find((string) => validWords.includes(string))
     )?.length ?? 0
   );
 }
+
+export type DictionaryType = typeof dictionary;
+type DictionaryKey = keyof DictionaryType;
+type DefinitionKey = keyof DictionaryType[DictionaryKey];
+
+function createRetrieveDefinition(dictionary: DictionaryType) {
+  return (letters: string) => {
+    return dictionary?.[sortABC(letters.toUpperCase()) as DictionaryKey][
+      letters.toUpperCase() as DefinitionKey
+    ] as string;
+  };
+}
+
+export const retrieveDefinition = createRetrieveDefinition(dictionary);

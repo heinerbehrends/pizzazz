@@ -12,7 +12,7 @@ import {
 import { swapLetters } from "./dragAndDropMachine.functions";
 import { GameMachineContext, getRandomAbc } from "./gameMachine";
 import { gameDuration } from "../srcServer/stateServer/serverGameMachine";
-import { getValidWordLength } from "../srcServer/stateServer/findValidWords";
+import { getValidWordLength } from "../srcServer/stateServer/findValidWordsAndDefinitions";
 
 export function showNextFrame(
   context: GameMachineContext,

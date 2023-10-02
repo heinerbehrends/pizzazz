@@ -13,13 +13,14 @@ function createDictionary(dictFile: any) {
       dictFile,
       (dictFile) => dictFile.toString() as string,
       (dictString) => dictString.split("\n"),
-      // remove the random " strings
+      // last line is empty
+      R.dropLast(1),
+      // remove the random " characters
       R.map((dictLine) => dictLine.replace(/"/g, "")),
       // split the string into a tuple of [word, definition]
       R.map((dictLine) => dictLine.split("\t")),
       // remove the words with more than 7 letters
       R.filter((dictLineTuple) => dictLineTuple[0].length <= 7),
-      R.dropLast(1),
       // remove the part after the first [ in the definition
       R.map((dictLineTuple) => [
         dictLineTuple[0],
@@ -28,6 +29,8 @@ function createDictionary(dictFile: any) {
     )
   );
 }
+
+export const dictionary = createDictionary(dictFile);
 
 fs.writeFile(
   "./dictionary.json",

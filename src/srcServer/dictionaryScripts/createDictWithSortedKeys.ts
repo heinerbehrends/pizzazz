@@ -1,12 +1,12 @@
 // this file will not run properly when type is set to 'module' in package.json
+// don't export from this file because the runtime cannot resolve fs
 import * as R from "remeda";
 // @ts-ignore-error
 import fs from "fs";
-import dictionary from "../stateServer/dictionary.json";
-
+import { dictionary } from "./createDictionaryFromDict";
 const wordListFile = fs.readFileSync("./wordList.txt");
 
-export const sortABC = (word: string) =>
+const sortABC = (word: string) =>
   R.pipe(
     word,
     (word) => word.split(""),
@@ -43,5 +43,5 @@ const generateDictionary = (wordListFile: Buffer) =>
 const associativeDictionary = generateDictionary(wordListFile);
 const content = JSON.stringify(associativeDictionary);
 
-fs.writeFile("./associated.json", content, console.error);
+fs.writeFile("./dictWithSortedKeys.json", content, console.error);
 console.log("File written successfully");
