@@ -10,14 +10,12 @@ import {
 } from "./gameMachine.types";
 import { swapLetters } from "./dragAndDropMachine.functions";
 import { GameMachineContext } from "./gameMachine";
-import { gameDuration } from "../srcServer/stateServer/serverGameMachine";
-
-const abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+import { ABC, GAME_DURATION } from "../srcServer/logicServer/constants";
 
 const getRandomIndex = (string: string) =>
   Math.floor(Math.random() * string.length);
 const getRandomLetter = (string: string) => string[getRandomIndex(string)];
-export const getRandomAbc = () => getRandomLetter(abc);
+export const getRandomAbc = () => getRandomLetter(ABC);
 
 export function showNextFrame(
   context: GameMachineContext,
@@ -102,7 +100,7 @@ export function setupNewGame(
     validWordLength: 0,
     letters: event.letters,
     lettersStatic: event.letters,
-    time: gameDuration,
+    time: GAME_DURATION,
   };
 }
 export function setupJoinGame(

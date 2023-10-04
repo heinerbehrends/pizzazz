@@ -1,44 +1,13 @@
 /* eslint no-underscore-dangle: off */
 import * as R from "remeda";
 import { findValidWords } from "./findValidWordsAndDefinitions";
-
-const letterDistributionStd = {
-  A: 9,
-  B: 2,
-  C: 2,
-  D: 4,
-  E: 12,
-  F: 2,
-  G: 3,
-  H: 2,
-  I: 9,
-  J: 1,
-  K: 1,
-  L: 4,
-  M: 2,
-  N: 6,
-  O: 8,
-  P: 2,
-  Q: 1,
-  R: 6,
-  S: 4,
-  T: 6,
-  U: 4,
-  V: 2,
-  W: 2,
-  X: 1,
-  Y: 2,
-  Z: 1,
-  8: 2,
-};
-
-const vowels = ["A", "E", "I", "O", "U"];
+import { LETTER_DISTRIBUTION, VOWELS } from "./constants";
 
 const bagOfLetters = R.pipe(
-  Object.keys(letterDistributionStd),
+  Object.keys(LETTER_DISTRIBUTION),
   R.map((letter) =>
     letter.repeat(
-      letterDistributionStd[letter as keyof typeof letterDistributionStd]
+      LETTER_DISTRIBUTION[letter as keyof typeof LETTER_DISTRIBUTION]
     )
   ),
   R.map((repeatedLetters) => repeatedLetters.split("")),
@@ -56,7 +25,7 @@ function grabRandom<Type>(array: Array<Type>) {
 function getRandomVowel() {
   return R.pipe(
     bagOfLetters as any,
-    R.filter((letter: string) => vowels.includes(letter)),
+    R.filter((letter: string) => VOWELS.includes(letter)),
     grabRandom
   );
 }
@@ -64,7 +33,7 @@ function getRandomVowel() {
 function getRandomConsonant() {
   return R.pipe(
     bagOfLetters as any,
-    R.filter((letter: string) => !vowels.includes(letter)),
+    R.filter((letter: string) => !VOWELS.includes(letter)),
     grabRandom
   );
 }

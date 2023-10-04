@@ -15,8 +15,8 @@ import {
   displaySolution,
 } from "./gameMachine.assignFunctions";
 import { LettersChangedMessage, gameMachineSchema } from "./gameMachine.types";
-import { gameDuration } from "../srcServer/stateServer/serverGameMachine";
 import { type TimeAndLettersMessage } from "../../server.types";
+import { GAME_DURATION } from "../srcServer/logicServer/constants";
 
 export type GameMachineContext = {
   letters: string;
@@ -126,7 +126,7 @@ export function gameMachine(socket: PartySocket) {
         validWordLength: 0,
         message: "Welcome to Pizzazz",
         definition: "a micro-scrabble word game",
-        time: gameDuration,
+        time: GAME_DURATION,
         name: "",
       },
       ...gameMachineSchema,

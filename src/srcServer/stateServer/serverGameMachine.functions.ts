@@ -3,7 +3,7 @@ import {
   retrieveDefinition,
 } from "../logicServer/findValidWordsAndDefinitions";
 import { generateLettersWithValidWords } from "../logicServer/generateRandomLetters";
-import { ServerGameMachineContext, gameDuration } from "./serverGameMachine";
+import { ServerGameMachineContext } from "./serverGameMachine";
 import type { ScreenNameMessage } from "../../components/Buttons";
 import type {
   TimeAndLettersMessage,
@@ -17,6 +17,7 @@ import type {
   NewTimeAndLettersMessage,
 } from "../../../server.types";
 import type { SolutionMessage } from "../../state/gameMachine.types";
+import { GAME_DURATION } from "../logicServer/constants";
 
 export function reactToClient(
   context: ServerGameMachineContext,
@@ -76,7 +77,7 @@ export function setNewGame(
   const [randomLetters, validWords] = generateLettersWithValidWords(7);
   return {
     ...context,
-    time: gameDuration,
+    time: GAME_DURATION,
     solutions: {},
     randomLetters,
     validWords,
