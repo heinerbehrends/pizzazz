@@ -1,8 +1,7 @@
 import * as R from "remeda";
 import {
-  type DefinitionMessage,
-  type StartNewGameMessage,
-  type TimeAndLettersReply,
+  type ValidLengthDefinitionMessage,
+  type TimeAndLettersMessage,
   type PlayerSolutionMessage,
 } from "../../server.types";
 import {
@@ -10,9 +9,15 @@ import {
   type LetterDroppedEvent,
 } from "./gameMachine.types";
 import { swapLetters } from "./dragAndDropMachine.functions";
-import { GameMachineContext, getRandomAbc } from "./gameMachine";
+import { GameMachineContext } from "./gameMachine";
 import { gameDuration } from "../srcServer/stateServer/serverGameMachine";
-import { getValidWordLength } from "../srcServer/stateServer/findValidWordsAndDefinitions";
+
+const abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+const getRandomIndex = (string: string) =>
+  Math.floor(Math.random() * string.length);
+const getRandomLetter = (string: string) => string[getRandomIndex(string)];
+export const getRandomAbc = () => getRandomLetter(abc);
 
 export function showNextFrame(
   context: GameMachineContext,
@@ -49,53 +54,38 @@ export function updateLetters(
   };
 }
 
-export function setDefinition(
+export function setValidLengthAndDefinition(
   context: GameMachineContext,
-  event: DefinitionMessage
+  event: ValidLengthDefinitionMessage
 ) {
-  console.log("setDefinition event: ", event);
   return {
     ...context,
+    validWordLength: event.validWordLength,
     definition: event.definition,
-  };
-}
-
-export function setValidLength(
-  context: GameMachineContext
-): GameMachineContext {
-  const validWordLength = getValidWordLength(
-    context.letters,
-    context.validWords
-  );
-  return {
-    ...context,
-    validWordLength,
   };
 }
 
 export function setTimeAndLetters(
   context: GameMachineContext,
-  event: TimeAndLettersReply
+  event: TimeAndLettersMessage
 ): GameMachineContext {
   console.log("setTimeAndLetters event: ", event);
   return {
     ...context,
     time: event.time,
     lettersStatic: event.letters,
-    validWords: event.validWords,
   };
 }
 
 export function setupWaitingGame(
   context: GameMachineContext,
-  event: StartNewGameMessage | TimeAndLettersReply
+  event: TimeAndLettersMessage
 ): GameMachineContext {
-  console.log("Hello from setupNewGame: ", event);
+  console.log("Hello from setupWaitingGame: ", event);
   return {
     ...context,
     message: `A new game will start in ${event.time} seconds`,
     validWordLength: 0,
-    validWords: event.validWords,
     lettersStatic: event.letters,
     time: event.time,
   };
@@ -103,7 +93,7 @@ export function setupWaitingGame(
 
 export function setupNewGame(
   context: GameMachineContext,
-  event: StartNewGameMessage | TimeAndLettersReply
+  event: TimeAndLettersMessage
 ): GameMachineContext {
   console.log("Hello from setupNewGame: ", event);
   return {
@@ -113,19 +103,18 @@ export function setupNewGame(
     letters: event.letters,
     lettersStatic: event.letters,
     time: gameDuration,
-    validWords: event.validWords,
   };
 }
 export function setupJoinGame(
   context: GameMachineContext,
   event: { type: "joinGame" }
 ): GameMachineContext {
-  console.log("Hello from setupNewGame: ", event);
+  console.log("Hello from setupJoinGame: ", event);
   return {
     ...context,
     message: "Move the letters to find valid words",
     validWordLength: 0,
-    time: context.time,
+    // time: context.time,
   };
 }
 

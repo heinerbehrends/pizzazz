@@ -1,7 +1,7 @@
 import { assign, createMachine } from "xstate";
 import { serverGameMachineSchema } from "../../../server.types";
 import { choose, log, sendParent } from "xstate/lib/actions";
-import { generateRandomLetters } from "./generateRandomLetters";
+import { generateLettersWithValidWords } from "../logicServer/generateRandomLetters";
 import {
   countdownTime,
   reactToClient,
@@ -21,6 +21,8 @@ export type ServerGameMachineContext = {
   solutions: Record<string, string>;
   validWords: string[];
 };
+
+const [initialLetters, initialValidWords] = generateLettersWithValidWords(5);
 
 export function serverGameMachine() {
   return createMachine(
@@ -57,7 +59,7 @@ export function serverGameMachine() {
             userDisconnected: {
               actions: ["removeNameAndId"],
             },
-            getDefinition: {
+            lettersChanged: {
               actions: ["reactToClient"],
             },
             solution: {
@@ -68,10 +70,10 @@ export function serverGameMachine() {
       },
       context: {
         time: gameDuration,
-        randomLetters: generateRandomLetters(),
+        randomLetters: initialLetters,
+        validWords: initialValidWords,
         players: {},
         solutions: {},
-        validWords: [],
       },
       predictableActionArguments: true,
       ...serverGameMachineSchema,

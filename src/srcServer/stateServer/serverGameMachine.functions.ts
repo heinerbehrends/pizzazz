@@ -1,19 +1,20 @@
 import {
-  findValidWords,
+  getValidWordLength,
   retrieveDefinition,
-} from "./findValidWordsAndDefinitions";
-import { generateRandomLetters } from "./generateRandomLetters";
+} from "../logicServer/findValidWordsAndDefinitions";
+import { generateLettersWithValidWords } from "../logicServer/generateRandomLetters";
 import { ServerGameMachineContext, gameDuration } from "./serverGameMachine";
-import { type ScreenNameMessage } from "../../components/Buttons";
-import {
-  type TimeAndLettersReply,
-  type DefinitionMessage,
-  type PlayerSolutionMessage,
-  type StartNewGameMessage,
-  type SendToParentEvent,
-  type WithConnectionId,
-  type UserDisconnectedEvent,
-  type NewPlayerEvent,
+import type { ScreenNameMessage } from "../../components/Buttons";
+import type {
+  TimeAndLettersMessage,
+  PlayerSolutionMessage,
+  SendToParentEvent,
+  WithConnectionId,
+  UserDisconnectedNotification,
+  NewPlayerNotification,
+  WithExcludedPlayers,
+  ValidLengthDefinitionMessage,
+  NewTimeAndLettersMessage,
 } from "../../../server.types";
 import type { SolutionMessage } from "../../state/gameMachine.types";
 
@@ -24,24 +25,35 @@ export function reactToClient(
   switch (event.type) {
     case "screenName":
       return {
-        type: "timeAndLettersReply",
+        type: "timeAndLetters",
         time: context.time,
         letters: context.randomLetters,
-        validWords: context.validWords,
         excludedPlayers: Object.keys(context.players).filter(
           (id) => id !== event.connectionId
         ),
-      } satisfies TimeAndLettersReply;
+      } satisfies WithExcludedPlayers<TimeAndLettersMessage>;
 
-    case "getDefinition":
-      console.log("getDefinition letters: ", event.letters);
+    case "":
       return {
-        type: "definition",
-        definition: retrieveDefinition(event.letters),
+        type: "newTimeAndLetters",
+        letters: context.randomLetters,
+        time: context.time,
+      } satisfies NewTimeAndLettersMessage;
+
+    case "lettersChanged":
+      const validWordLength = getValidWordLength(
+        event.letters,
+        context.validWords
+      );
+      const validWord = event.letters.substring(0, validWordLength);
+      return {
+        type: "validLengthDefinition",
+        definition: retrieveDefinition(validWord),
+        validWordLength,
         excludedPlayers: Object.keys(context.players).filter(
           (id) => id !== event.connectionId
         ),
-      } satisfies DefinitionMessage;
+      } satisfies WithExcludedPlayers<ValidLengthDefinitionMessage>;
 
     case "solution":
       return {
@@ -50,28 +62,23 @@ export function reactToClient(
         length: event.solution.length,
         score: event.score,
         excludedPlayers: [event.connectionId],
-      } satisfies PlayerSolutionMessage;
+      } satisfies WithExcludedPlayers<PlayerSolutionMessage>;
 
-    case "":
-      return {
-        type: "startNewGame",
-        letters: context.randomLetters,
-        time: context.time,
-        validWords: context.validWords,
-      } satisfies StartNewGameMessage;
+    default:
+      const exhaustiveCheck: never = event;
+      return exhaustiveCheck;
   }
 }
 
 export function setNewGame(
   context: ServerGameMachineContext
 ): ServerGameMachineContext {
-  const randomLetters = generateRandomLetters();
-  const validWords = findValidWords(randomLetters);
+  const [randomLetters, validWords] = generateLettersWithValidWords(7);
   return {
     ...context,
     time: gameDuration,
     solutions: {},
-    randomLetters: randomLetters,
+    randomLetters,
     validWords,
   };
 }
@@ -96,7 +103,7 @@ export function saveNameAndId(
 }
 export function saveId(
   context: ServerGameMachineContext,
-  event: WithConnectionId<NewPlayerEvent>
+  event: WithConnectionId<NewPlayerNotification>
 ): ServerGameMachineContext {
   return {
     ...context,
@@ -106,7 +113,7 @@ export function saveId(
 
 export function removeNameAndId(
   context: ServerGameMachineContext,
-  event: WithConnectionId<UserDisconnectedEvent>
+  event: WithConnectionId<UserDisconnectedNotification>
 ): ServerGameMachineContext {
   const { [event.connectionId]: removedName, ...newPlayers } = context.players;
   return {

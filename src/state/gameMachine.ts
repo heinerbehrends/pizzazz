@@ -7,17 +7,16 @@ import {
   countdownUpdateTime,
   updateLetters,
   showNextFrame,
-  setDefinition,
+  setValidLengthAndDefinition,
   setTimeAndLetters,
   setupNewGame,
   setupJoinGame,
   setupWaitingGame,
   displaySolution,
-  setValidLength,
 } from "./gameMachine.assignFunctions";
-import { GetDefinitionMessage, gameMachineSchema } from "./gameMachine.types";
+import { LettersChangedMessage, gameMachineSchema } from "./gameMachine.types";
 import { gameDuration } from "../srcServer/stateServer/serverGameMachine";
-import { type TimeAndLettersReply } from "../../server.types";
+import { type TimeAndLettersMessage } from "../../server.types";
 
 export type GameMachineContext = {
   letters: string;
@@ -27,7 +26,6 @@ export type GameMachineContext = {
   definition: string | null;
   time: number;
   name: string;
-  validWords: string[];
 };
 
 export function gameMachine(socket: PartySocket) {
@@ -65,7 +63,7 @@ export function gameMachine(socket: PartySocket) {
             animate: {
               actions: ["showNextFrame"],
             },
-            timeAndLettersReply: [
+            timeAndLetters: [
               {
                 target: "dragAndDrop",
                 actions: ["setupGame"],
@@ -88,7 +86,7 @@ export function gameMachine(socket: PartySocket) {
           },
           on: {
             joinGame: { target: "dragAndDrop", actions: ["setupJoinGame"] },
-            startNewGame: {
+            newTimeAndLetters: {
               actions: ["setupGame"],
               target: "dragAndDrop",
             },
@@ -105,12 +103,12 @@ export function gameMachine(socket: PartySocket) {
           on: {
             animate: { actions: ["showNextFrame"] },
             letterDropped: {
-              actions: ["updateLetters", "setValidLength", "requestDefintion"],
+              actions: ["updateLetters", "sendLettersChanged"],
             },
-            definition: {
-              actions: ["setDefinition"],
+            validLengthDefinition: {
+              actions: ["setValidLengthAndDefinition"],
             },
-            startNewGame: {
+            newTimeAndLetters: {
               actions: ["setupNewGame", forwardTo("animationMachine")],
             },
             solution: {
@@ -123,14 +121,13 @@ export function gameMachine(socket: PartySocket) {
         },
       },
       context: {
-        letters: "pizzazz",
-        lettersStatic: "pizzazz",
+        letters: "PIZZAZZ",
+        lettersStatic: "PIZZAZZ",
         validWordLength: 0,
         message: "Welcome to Pizzazz",
         definition: "a micro-scrabble word game",
         time: gameDuration,
         name: "",
-        validWords: [],
       },
       ...gameMachineSchema,
       tsTypes: {} as import("./gameMachine.typegen").Typegen0,
@@ -142,20 +139,19 @@ export function gameMachine(socket: PartySocket) {
           console.log("sending to server: ", event);
           socket.send(JSON.stringify(event));
         },
-        requestDefintion: (context) => {
+        sendLettersChanged: (context) => {
           socket.send(
             JSON.stringify({
-              type: "getDefinition",
-              letters: context.letters.substring(0, context.validWordLength),
-            } as GetDefinitionMessage)
+              type: "lettersChanged",
+              letters: context.letters,
+            } as LettersChangedMessage)
           );
         },
         // todo: create reducer functions for each state property state describe how they change with events
         countdown: assign(countdownUpdateTime),
         updateLetters: assign(updateLetters),
         showNextFrame: assign(showNextFrame),
-        setDefinition: assign(setDefinition),
-        setValidLength: assign(setValidLength),
+        setValidLengthAndDefinition: assign(setValidLengthAndDefinition),
         setupGame: assign(setTimeAndLetters),
         setupNewGame: assign(setupNewGame),
         setupJoinGame: assign(setupJoinGame),
@@ -163,8 +159,8 @@ export function gameMachine(socket: PartySocket) {
         displaySolution: assign(displaySolution),
       },
       guards: {
-        isLittleTimeLeft: (_, event: TimeAndLettersReply) => event.time < 40,
-        isEnoughTimeLeft: (_, event: TimeAndLettersReply) => event.time > 40,
+        isLittleTimeLeft: (_, event: TimeAndLettersMessage) => event.time < 40,
+        isEnoughTimeLeft: (_, event: TimeAndLettersMessage) => event.time > 40,
       },
       services: {
         // subscribe to messages from the server
@@ -178,10 +174,3 @@ export function gameMachine(socket: PartySocket) {
     }
   );
 }
-
-const abc = "abcdefghijklmnopqrstuvwxyz";
-
-const getRandomIndex = (string: string) =>
-  Math.floor(Math.random() * string.length);
-const getRandomLetter = (string: string) => string[getRandomIndex(string)];
-export const getRandomAbc = () => getRandomLetter(abc);

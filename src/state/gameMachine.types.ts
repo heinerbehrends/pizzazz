@@ -1,8 +1,8 @@
 import { ServerToClientMessage } from "../../server.types";
 import { ScreenNameMessage } from "../components/Buttons";
 
-export type GetDefinitionMessage = {
-  type: "getDefinition";
+export type LettersChangedMessage = {
+  type: "lettersChanged";
   letters: string;
 };
 
@@ -33,7 +33,7 @@ export type SolutionMessage = {
 };
 
 export type ClientToServerMessage =
-  | GetDefinitionMessage
+  | LettersChangedMessage
   | ScreenNameMessage
   | SolutionMessage;
 
@@ -57,7 +57,6 @@ export const gameMachineSchema = {
     actions: {} as
       | { type: "animate"; index: number }
       | { type: "updateLetters" }
-      | { type: "sendLettersToServer" }
       | { type: "setTime" }
       | { type: "showNextFrame" }
       | { type: "sendToServer" }
@@ -66,6 +65,7 @@ export const gameMachineSchema = {
       | { type: "setupWaitingGame" }
       | { type: "displaySolution" }
       | { type: "setDefinition" }
+      | { type: "sendLettersChanged" }
       | { type: "setValidLength" },
 
     context: {
@@ -76,7 +76,6 @@ export const gameMachineSchema = {
       definition: "" as string | null,
       time: 50 as number,
       name: "" as string,
-      validWords: [] as string[],
     },
     events: {} as
       | ServerToClientMessage

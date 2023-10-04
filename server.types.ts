@@ -1,25 +1,20 @@
 import { ClientToServerMessage } from "./src/state/gameMachine.types";
 
-export type DefinitionMessage = {
-  type: "definition";
+export type ValidLengthDefinitionMessage = {
+  type: "validLengthDefinition";
+  validWordLength: number;
   definition: string | null;
-  excludedPlayers?: string[];
 };
 
-export type TimeAndLettersReply = {
-  type: "timeAndLettersReply";
-  letters: string;
-  validWords: string[];
+export type TimeAndLettersMessage = {
+  type: "timeAndLetters";
   time: number;
-  excludedPlayers: string[];
+  letters: string;
 };
-
-export type StartNewGameMessage = {
-  type: "startNewGame";
-  letters: string;
+export type NewTimeAndLettersMessage = {
+  type: "newTimeAndLetters";
   time: number;
-  validWords: string[];
-  excludedPlayers?: string[];
+  letters: string;
 };
 
 export type PlayerSolutionMessage = {
@@ -27,41 +22,50 @@ export type PlayerSolutionMessage = {
   name: string;
   length: number;
   score: number;
+};
+
+export type WithExcludedPlayers<Message extends { type: string }> = Message & {
   excludedPlayers: string[];
 };
 
-export type UserDisconnectedEvent = {
+export type AddExcludedPlayers<Messages extends { type: string }> = {
+  [Message in Messages as Message["type"]]: WithExcludedPlayers<Message>;
+}[Messages["type"]];
+
+export type UserDisconnectedNotification = {
   type: "userDisconnected";
 };
 
-export type NewPlayerEvent = {
+export type NewPlayerNotification = {
   type: "newPlayer";
 };
 
 export type ServerConnectionEvent =
   | WithConnectionId<{ type: "firstUserConnected" }>
   | { type: "lastUserDisconnected" }
-  | WithConnectionId<UserDisconnectedEvent>
-  | WithConnectionId<NewPlayerEvent>;
+  | WithConnectionId<UserDisconnectedNotification>
+  | WithConnectionId<NewPlayerNotification>;
 
 export type ServerToClientMessage =
-  | DefinitionMessage
-  | TimeAndLettersReply
-  | StartNewGameMessage
+  | ValidLengthDefinitionMessage
+  | TimeAndLettersMessage
+  | NewTimeAndLettersMessage
   | PlayerSolutionMessage;
 
 export type WithConnectionId<Type extends { type: string }> = Type & {
   connectionId: string;
 };
 
-type addId<Events extends { type: string }> = {
+type AddId<Events extends { type: string }> = {
   [Event in Events as Event["type"]]: WithConnectionId<Event>;
 }[Events["type"]];
 
-type ClientToServerMessageWithId = addId<ClientToServerMessage>;
+type ExtendedClientToServerMessage = AddExcludedPlayers<
+  AddId<ClientToServerMessage>
+>;
 
 export type SendToParentEvent =
-  | ClientToServerMessageWithId
+  | ExtendedClientToServerMessage
   | {
       type: "";
     };
@@ -70,9 +74,9 @@ export const serverGameMachineSchema = {
   schema: {
     events: {} as
       | { type: "updateTime" }
-      | WithConnectionId<NewPlayerEvent>
+      | WithConnectionId<NewPlayerNotification>
       | ServerConnectionEvent
-      | ClientToServerMessageWithId,
+      | ExtendedClientToServerMessage,
     actions: {} as
       | { type: "updateTime" }
       | { type: "setupNewGame" }
@@ -96,9 +100,9 @@ export const serverMachineSchema = {
   schema: {
     context: {} as { value: string },
     events: {} as
-      | WithConnectionId<NewPlayerEvent>
+      | WithConnectionId<NewPlayerNotification>
       | ServerConnectionEvent
-      | WithConnectionId<TimeAndLettersReply>
-      | ClientToServerMessageWithId,
+      | WithConnectionId<TimeAndLettersMessage>
+      | AddId<ClientToServerMessage>,
   },
 };
