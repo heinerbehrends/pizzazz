@@ -11,8 +11,7 @@ import {
   saveSolution,
   setNewGame,
 } from "./serverGameMachine.functions";
-
-export const gameDuration = 20;
+import { GAME_DURATION } from "../logicServer/constants";
 
 export type ServerGameMachineContext = {
   time: number;
@@ -69,7 +68,7 @@ export function serverGameMachine() {
         },
       },
       context: {
-        time: gameDuration,
+        time: GAME_DURATION,
         randomLetters: initialLetters,
         validWords: initialValidWords,
         players: {},
