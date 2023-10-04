@@ -1,37 +1,38 @@
 /* eslint no-underscore-dangle: off */
 import * as R from "remeda";
+import { findValidWords } from "./findValidWordsAndDefinitions";
 
 const letterDistributionStd = {
-  e: 12,
-  a: 9,
-  i: 9,
-  o: 8,
-  n: 6,
-  r: 6,
-  t: 6,
-  l: 4,
-  s: 4,
-  u: 4,
-  d: 4,
-  g: 3,
-  b: 2,
-  c: 2,
-  m: 2,
-  p: 2,
-  f: 2,
-  h: 2,
-  v: 2,
-  w: 2,
-  y: 2,
-  k: 1,
-  j: 1,
-  x: 1,
-  q: 1,
-  z: 1,
-  // 8: 2,
+  A: 9,
+  B: 2,
+  C: 2,
+  D: 4,
+  E: 12,
+  F: 2,
+  G: 3,
+  H: 2,
+  I: 9,
+  J: 1,
+  K: 1,
+  L: 4,
+  M: 2,
+  N: 6,
+  O: 8,
+  P: 2,
+  Q: 1,
+  R: 6,
+  S: 4,
+  T: 6,
+  U: 4,
+  V: 2,
+  W: 2,
+  X: 1,
+  Y: 2,
+  Z: 1,
+  8: 2,
 };
 
-const vowels = ["a", "e", "i", "o", "u"];
+const vowels = ["A", "E", "I", "O", "U"];
 
 const bagOfLetters = R.pipe(
   Object.keys(letterDistributionStd),
@@ -101,4 +102,14 @@ export function generateRandomLetters(): string {
     R.join(""),
     limitToOneWildcard
   );
+}
+export function generateLettersWithValidWords(
+  minimum: number
+): [string, string[]] {
+  const randomLetters = generateRandomLetters();
+  const validWords = findValidWords(randomLetters);
+  if (validWords.length < minimum) {
+    return generateLettersWithValidWords(minimum);
+  }
+  return [randomLetters, validWords];
 }

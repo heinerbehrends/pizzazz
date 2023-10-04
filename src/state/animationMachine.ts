@@ -31,7 +31,7 @@ export const animationMachine = createMachine(
       },
       paused: {
         on: {
-          startNewGame: {
+          newTimeAndLetters: {
             target: "running",
             actions: ["resetIndex"],
           },
@@ -65,7 +65,7 @@ export const animationMachine = createMachine(
       sendUpdateLetters: () => (callback) => {
         const intervalId = setInterval(
           () => callback({ type: "updateLetters" }),
-          20
+          16
         );
         return () => clearInterval(intervalId);
       },

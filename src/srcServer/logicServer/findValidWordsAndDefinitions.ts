@@ -1,5 +1,6 @@
 import * as R from "remeda";
-import dictionary from "./dictionaryWithOrderedKeys.json";
+import dictionary from "./dictionary.json";
+import dictionaryWithSortedKeys from "./wordListWithSortedKeys.json";
 
 export function sortABC(word: string) {
   return R.pipe(
@@ -27,19 +28,23 @@ function computeCombinations(string: string) {
   return combine("", string, []);
 }
 
-function createFindValidWords(dictionary: DictionaryType) {
+function createFindValidWords(
+  dictWithSortedKeys: typeof dictionaryWithSortedKeys
+) {
   return (letters: string) => {
     return R.pipe(
-      computeCombinations(letters.toUpperCase()),
-      R.map((combination) => [sortABC(combination), combination]),
-      R.filter((combinationTuple) => combinationTuple[0] in dictionary),
-      R.map((validCombinationTuple) => validCombinationTuple[1]),
+      computeCombinations(sortABC(letters.toUpperCase())),
+      R.filter((combination) => combination in dictionaryWithSortedKeys),
+      R.map(
+        (combination) =>
+          dictWithSortedKeys[combination as keyof typeof dictWithSortedKeys]
+      ),
       R.flatten()
     );
   };
 }
 
-export const findValidWords = createFindValidWords(dictionary);
+export const findValidWords = createFindValidWords(dictionaryWithSortedKeys);
 
 function stringToPossibleWords(string: string) {
   return Array(string.length - 1)
@@ -50,7 +55,7 @@ function stringToPossibleWords(string: string) {
 export function getValidWordLength(string: string, validWords: string[]) {
   return (
     R.pipe(
-      string.toUpperCase(),
+      string,
       (string) => stringToPossibleWords(string),
       R.find((string) => validWords.includes(string))
     )?.length ?? 0
@@ -59,13 +64,10 @@ export function getValidWordLength(string: string, validWords: string[]) {
 
 export type DictionaryType = typeof dictionary;
 type DictionaryKey = keyof DictionaryType;
-type DefinitionKey = keyof DictionaryType[DictionaryKey];
 
 function createRetrieveDefinition(dictionary: DictionaryType) {
   return (letters: string) => {
-    return dictionary?.[sortABC(letters.toUpperCase()) as DictionaryKey][
-      letters.toUpperCase() as DefinitionKey
-    ] as string;
+    return dictionary?.[letters as DictionaryKey] ?? null;
   };
 }
 

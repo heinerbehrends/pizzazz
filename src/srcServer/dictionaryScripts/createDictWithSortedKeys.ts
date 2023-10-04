@@ -3,9 +3,8 @@
 import * as R from "remeda";
 // @ts-ignore-error
 import fs from "fs";
-import { dictionary } from "./createDictionaryFromDict";
+// import { dictionary } from "./createDictionaryFromDict";
 const wordListFile = fs.readFileSync("./wordList.txt");
-
 const sortABC = (word: string) =>
   R.pipe(
     word,
@@ -15,19 +14,17 @@ const sortABC = (word: string) =>
   );
 
 const toSortedKeysDictionary = (
-  dict: Record<string, Record<string, string>>,
+  dict: Record<string, string[]>,
   string: string
 ) => {
-  const resultDict = dict;
-  const sortedString = sortABC(string);
-  const previousEntry = resultDict[sortedString];
-  resultDict[sortedString] = previousEntry
-    ? {
-        [string]: dictionary[string as keyof typeof dictionary],
-        ...previousEntry,
-      }
-    : { [string]: dictionary[string as keyof typeof dictionary] };
-  return resultDict;
+  const sorted = sortABC(string);
+  let result = dict;
+  if (sorted in result) {
+    result[sorted].push(string);
+  } else {
+    result[sorted] = [string];
+  }
+  return result;
 };
 // @ts-ignore-error
 const generateDictionary = (wordListFile: Buffer) =>
@@ -39,8 +36,11 @@ const generateDictionary = (wordListFile: Buffer) =>
     R.reject((el) => el.length > 7 || el.length === 0),
     R.reduce(toSortedKeysDictionary, {})
   );
+// { ordered: null }
+// { unordered: definition }
 
 const associativeDictionary = generateDictionary(wordListFile);
+console.log("hello from createDictWithSortedKeys.ts");
 const content = JSON.stringify(associativeDictionary);
 
 fs.writeFile("./dictWithSortedKeys.json", content, console.error);

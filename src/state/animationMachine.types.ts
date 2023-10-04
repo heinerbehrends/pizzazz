@@ -1,4 +1,4 @@
-import { StartNewGameMessage } from "../../server.types";
+import { NewTimeAndLettersMessage } from "../../server.types";
 
 export const animationMachineSchema = {
   schema: {
@@ -21,6 +21,6 @@ export const animationMachineSchema = {
     events: {} as
       | { type: "updateLetters" }
       | { type: "sendAnimate"; index: number }
-      | StartNewGameMessage,
+      | NewTimeAndLettersMessage,
   },
 };
