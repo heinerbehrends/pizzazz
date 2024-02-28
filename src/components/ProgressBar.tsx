@@ -2,7 +2,7 @@ import { useActor } from "@xstate/react";
 import { useContext, useEffect, useRef } from "react";
 import { css } from "../../styled-system/css";
 import { GlobalStateContext } from "../state/contextProvider";
-import { gameDuration } from "../srcServer/stateServer/serverGameMachine";
+import { GAME_DURATION } from "../srcServer/logicServer/constants";
 
 const containerStyles = css({
   marginX: "auto",
@@ -35,7 +35,7 @@ export function ProgressBar() {
     }
     console.log("progress bar time: ", state.context.time);
     const progressBarKeyframes = [
-      { width: `${100 - (state.context.time / gameDuration) * 100}%` },
+      { width: `${100 - (state.context.time / GAME_DURATION) * 100}%` },
       { width: "100%" },
     ];
     const progressBarTiming = {
